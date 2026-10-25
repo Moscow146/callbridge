@@ -5,6 +5,10 @@ updates:
     schedule:
       interval: weekly
     labels: [dependencies, windows]
+    ignore:
+      # NAudio 3 deprecates WasapiOut/WasapiCapture and makes BufferedWaveProvider.BufferDuration read-only
+      - dependency-name: NAudio
+        update-types: [version-update:semver-major]
   - package-ecosystem: gradle
     directory: /android
     schedule:
