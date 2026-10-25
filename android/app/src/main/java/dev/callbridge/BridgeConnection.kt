@@ -1,8 +1,11 @@
 package dev.callbridge
 
+import android.net.Network
+import android.util.Log
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.IOException
+import java.net.InetAddress
 import java.net.InetSocketAddress
 import java.net.Socket
 import java.util.concurrent.Executors
@@ -12,6 +15,8 @@ private const val CONNECT_TIMEOUT_MS = 1500
 /** Connects to the PC, performs the handshake and dispatches incoming frames. */
 class BridgeConnection(
 	private val pairing: Pairing,
+	private val lan: Network?,
+	private val broadcast: InetAddress?,
 	private val deviceName: String,
 	private val listener: Listener,
 ) {
@@ -58,7 +63,8 @@ class BridgeConnection(
 	/** Tries every address from the QR code, the first that answers wins. */
 	private fun reach(): Socket? {
 		connectAny(pairing.hosts)?.let { return it }
-		val discovered = Discovery.find(pairing.name).filter { it !in pairing.hosts }
+		val discovered = Discovery.find(pairing.name, lan, broadcast).filter { it !in pairing.hosts }
+		Log.i("CallBridge", "wifi network=$lan, discovered=$discovered")
 		return connectAny(discovered)?.also { listener.onHostFound(it.inetAddress.hostAddress.orEmpty()) }
 	}
 
@@ -67,10 +73,12 @@ class BridgeConnection(
 			if (closed) return null
 			val s = Socket()
 			try {
+				if (!host.startsWith("127.")) lan?.bindSocket(s)
 				s.tcpNoDelay = true
 				s.connect(InetSocketAddress(host, pairing.port), CONNECT_TIMEOUT_MS)
 				return s
 			} catch (e: IOException) {
+				Log.w("CallBridge", "connect to $host failed: ${e.message}")
 				runCatching { s.close() }
 			}
 		}

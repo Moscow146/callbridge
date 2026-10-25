@@ -87,7 +87,8 @@ class BridgeService : Service(), BridgeConnection.Listener {
 		val current = pairing ?: return
 		disconnect()
 		BridgeState.update(getString(R.string.status_connecting, current.name))
-		connection = BridgeConnection(current, Build.MODEL, this).also { it.start() }
+		val lan = LanNetwork.wifi(this)
+		connection =BridgeConnection(current, lan, LanNetwork.broadcast(this, lan), Build.MODEL, this).also { it.start() }
 	}
 
 	private fun disconnect() {

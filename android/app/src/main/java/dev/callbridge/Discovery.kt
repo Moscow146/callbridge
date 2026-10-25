@@ -1,5 +1,7 @@
 package dev.callbridge
 
+import android.net.Network
+import android.util.Log
 import java.io.IOException
 import java.net.DatagramPacket
 import java.net.DatagramSocket
@@ -12,13 +14,20 @@ private const val LISTEN_MS = 1200
 
 /** Finds PCs on the local network that answer the broadcast, the one named [name] first. */
 object Discovery {
-	fun find(name: String): List<String> {
+	fun find(name: String, lan: Network?, broadcast: InetAddress?): List<String> {
 		val found = LinkedHashMap<String, String>()
 		try {
 			DatagramSocket().use { socket ->
+				lan?.bindSocket(socket)
 				socket.broadcast = true
 				val query = QUERY.toByteArray()
-				socket.send(DatagramPacket(query, query.size, InetAddress.getByName("255.255.255.255"), DISCOVERY_PORT))
+				for (target in listOfNotNull(broadcast, InetAddress.getByName("255.255.255.255"))) {
+					try {
+						socket.send(DatagramPacket(query, query.size, target, DISCOVERY_PORT))
+					} catch (e: IOException) {
+						Log.w("CallBridge", "discovery send to $target failed: ${e.message}")
+					}
+				}
 				val deadline = System.currentTimeMillis() + LISTEN_MS
 				val buffer = ByteArray(256)
 				while (true) {
@@ -36,6 +45,7 @@ object Discovery {
 				}
 			}
 		} catch (e: IOException) {
+			Log.w("CallBridge", "discovery failed: ${e.message}")
 			return emptyList()
 		}
 		return found.entries.sortedByDescending { it.value == name }.map { it.key }
