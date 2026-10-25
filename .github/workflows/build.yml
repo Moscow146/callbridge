@@ -1,0 +1,60 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Test
+        run: dotnet test windows/CallBridge.sln
+      - name: Publish
+        run: ./scripts/publish-windows.ps1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: CallBridge-windows
+          path: build/windows/CallBridge.exe
+
+  android:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: android-actions/setup-android@v3
+      - name: Build APK and Magisk module
+        run: ./scripts/build-android.ps1 -Module
+      - uses: actions/upload-artifact@v4
+        with:
+          name: CallBridge-android
+          path: |
+            android/app/build/outputs/apk/release/app-release.apk
+            build/callbridge-magisk.zip
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [windows, android]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/**/CallBridge.exe
+            dist/**/callbridge-magisk.zip
+            dist/**/app-release.apk
