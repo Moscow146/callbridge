@@ -4,8 +4,14 @@ import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.animation.ObjectAnimator
+import android.animation.ValueAnimator
+import android.graphics.RenderEffect
+import android.graphics.Shader
 import android.os.Bundle
 import android.view.View
+import android.view.WindowInsets
+import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.Button
 import android.widget.TextView
 
@@ -27,9 +33,15 @@ class MainActivity : Activity() {
 	private lateinit var scan: Button
 	private lateinit var status: TextView
 	private val store by lazy { PairingStore(this) }
+	private lateinit var pill: TextView
 	private val observer: (String) -> Unit = { text ->
 		status.text = text
-		toggle.setText(if (BridgeState.running) R.string.disconnect else R.string.connect)
+		renderToggle()
+		pill.text = when {
+			text.startsWith("Connected") -> "● Connected"
+			BridgeState.running -> "● Connecting"
+			else -> "Offline"
+		}
 	}
 
 	override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,6 +51,8 @@ class MainActivity : Activity() {
 		toggle = findViewById(R.id.toggle)
 		scan = findViewById(R.id.scan)
 		status = findViewById(R.id.status)
+		pill = findViewById(R.id.pill)
+		setupGlass()
 		toggle.setOnClickListener { if (BridgeState.running) stopBridge() else startBridge() }
 		scan.setOnClickListener { startActivityForResult(Intent(this, ScanActivity::class.java), REQUEST_SCAN) }
 		val missing = PERMISSIONS.filter { checkSelfPermission(it) != PackageManager.PERMISSION_GRANTED }
@@ -70,6 +84,38 @@ class MainActivity : Activity() {
 			refresh()
 			startBridge()
 		}
+	}
+
+	private fun setupGlass() {
+		val density = resources.displayMetrics.density
+		val content = findViewById<View>(R.id.content)
+		val basePadding = content.paddingLeft
+		content.setOnApplyWindowInsetsListener { view, insets ->
+			val bars = insets.getInsets(WindowInsets.Type.systemBars())
+			view.setPadding(basePadding + bars.left, basePadding + bars.top, basePadding + bars.right, basePadding + bars.bottom)
+			insets
+		}
+		findViewById<View>(R.id.orbs).setRenderEffect(RenderEffect.createBlurEffect(90 * density, 90 * density, Shader.TileMode.CLAMP))
+		drift(R.id.orb_blue, 90f * density, 120f * density, 14000)
+		drift(R.id.orb_pink, -100f * density, -110f * density, 18000)
+		drift(R.id.orb_teal, 80f * density, -90f * density, 21000)
+	}
+
+	private fun drift(id: Int, dx: Float, dy: Float, duration: Long) {
+		val orb = findViewById<View>(id)
+		for ((property, distance) in listOf("translationX" to dx, "translationY" to dy)) {
+			ObjectAnimator.ofFloat(orb, property, 0f, distance).apply {
+				this.duration = duration
+				repeatCount = ValueAnimator.INFINITE
+				repeatMode = ValueAnimator.REVERSE
+				interpolator = AccelerateDecelerateInterpolator()
+			}.start()
+		}
+	}
+
+	private fun renderToggle() {
+		toggle.setText(if (BridgeState.running) R.string.disconnect else R.string.connect)
+		toggle.setBackgroundResource(if (BridgeState.running) R.drawable.btn_red else R.drawable.btn_green)
 	}
 
 	private fun acceptDeepLink(intent: Intent) {

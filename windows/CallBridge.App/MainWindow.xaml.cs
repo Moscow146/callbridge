@@ -1,7 +1,10 @@
 ﻿using System.IO;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Interop;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using CallBridge.Core.Audio;
@@ -32,6 +35,7 @@ public partial class MainWindow : Window
 		FillDevices(MicCombo, AudioDevices.Capture(), settings.MicId);
 		FillDevices(SpeakerCombo, AudioDevices.Render(), settings.SpeakerId);
 		VolumeSlider.Value = settings.Volume;
+		VolumeText.Text = $"{settings.Volume * 100:0}%";
 		loading = false;
 
 		server.PhoneConnected += s => Dispatcher.Invoke(() => OnPhoneConnected(s));
@@ -41,6 +45,17 @@ public partial class MainWindow : Window
 		levelTimer.Tick += (_, _) => MicLevel.Value = session?.MicLevel ?? 0;
 		levelTimer.Start();
 		Closed += (_, _) => server.Dispose();
+	}
+
+	[DllImport("dwmapi.dll")]
+	static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int value, int size);
+
+	protected override void OnSourceInitialized(EventArgs e)
+	{
+		base.OnSourceInitialized(e);
+		var handle = new WindowInteropHelper(this).Handle;
+		var dark = 1;
+		DwmSetWindowAttribute(handle, 20, ref dark, sizeof(int));
 	}
 
 	void ShowQr()
@@ -78,9 +93,10 @@ public partial class MainWindow : Window
 	{
 		session = s;
 		s.StateChanged += state => Dispatcher.Invoke(() => ShowState(state));
-		s.AudioRouteChanged += reason => Dispatcher.Invoke(() => RouteText.Text = reason == null ? "" : $"Call audio unavailable: {reason}");
-		PhoneText.Text = $"Connected: {s.DeviceName}";
-		PhoneText.Foreground = System.Windows.Media.Brushes.SeaGreen;
+		s.AudioRouteChanged += reason => Dispatcher.Invoke(() => ShowRoute(reason == null ? null : $"Call audio unavailable: {reason}"));
+		StatusText.Text = $"Connected · {s.DeviceName}";
+		StatusDot.Fill = (Brush)FindResource("Green");
+		QrCard.Visibility = Visibility.Collapsed;
 		DialButton.IsEnabled = true;
 		ApplyDevices();
 		s.Muted = MuteButton.IsChecked == true;
@@ -90,11 +106,18 @@ public partial class MainWindow : Window
 	void OnPhoneDisconnected()
 	{
 		session = null;
-		PhoneText.Text = "Phone not connected";
-		PhoneText.Foreground = System.Windows.Media.Brushes.DarkOrange;
+		StatusText.Text = "Waiting for phone";
+		StatusDot.Fill = (Brush)FindResource("Amber");
+		QrCard.Visibility = Visibility.Visible;
 		DialButton.IsEnabled = false;
 		ShowState(new PhoneState(CallState.Idle, null, null));
-		RouteText.Text = "";
+		ShowRoute(null);
+	}
+
+	void ShowRoute(string? message)
+	{
+		RouteText.Text = message ?? "";
+		RouteText.Visibility = message == null ? Visibility.Collapsed : Visibility.Visible;
 	}
 
 	void ApplyDevices()
@@ -105,24 +128,27 @@ public partial class MainWindow : Window
 		}
 		catch (Exception e) when (e is System.Runtime.InteropServices.COMException or InvalidOperationException)
 		{
-			RouteText.Text = $"Audio device error: {e.Message}";
+			ShowRoute($"Audio device error: {e.Message}");
 		}
 	}
 
 	void ShowState(PhoneState state)
 	{
-		var who = state.Name ?? state.Number;
-		CallText.Text = state.Call switch
+		var who = state.Name ?? state.Number ?? "Unknown number";
+		var idle = state.Call == CallState.Idle;
+		CallTitle.Text = idle ? "No call" : who;
+		CallSub.Text = state.Call switch
 		{
-			CallState.Ringing => $"Incoming: {who}",
-			CallState.Dialing => $"Calling: {who}",
-			CallState.Active => $"In call: {who}",
-			CallState.Held => $"On hold: {who}",
-			_ => "No call",
+			CallState.Ringing => "Incoming call",
+			CallState.Dialing => "Calling…",
+			CallState.Active => "In call",
+			CallState.Held => "On hold",
+			_ => "Waiting for a call",
 		};
-		AnswerButton.IsEnabled = state.Call == CallState.Ringing;
-		RejectButton.IsEnabled = state.Call == CallState.Ringing;
-		HangupButton.IsEnabled = state.Call is CallState.Active or CallState.Dialing or CallState.Held;
+		var ringing = state.Call == CallState.Ringing;
+		AnswerButton.Visibility = ringing ? Visibility.Visible : Visibility.Collapsed;
+		RejectButton.Visibility = ringing ? Visibility.Visible : Visibility.Collapsed;
+		HangupButton.Visibility = state.Call is CallState.Active or CallState.Dialing or CallState.Held ? Visibility.Visible : Visibility.Collapsed;
 	}
 
 	void OnDeviceChanged(object sender, SelectionChangedEventArgs e)
@@ -141,6 +167,7 @@ public partial class MainWindow : Window
 			return;
 		settings.Volume = e.NewValue;
 		settings.Save();
+		VolumeText.Text = $"{e.NewValue * 100:0}%";
 		if (session != null)
 			session.SpeakerVolume = (float)e.NewValue;
 	}
