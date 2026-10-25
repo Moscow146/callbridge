@@ -69,7 +69,7 @@ class BridgeService : Service(), BridgeConnection.Listener {
 		stopping = false
 		BridgeState.running = true
 		val notification = Notification.Builder(this, CHANNEL_ID)
-			.setSmallIcon(R.drawable.ic_launcher)
+			.setSmallIcon(R.drawable.ic_notification)
 			.setContentTitle(getString(R.string.app_name))
 			.setContentText("Bridge to ${current.name}")
 			.setOngoing(true)

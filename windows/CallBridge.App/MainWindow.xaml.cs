@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
@@ -20,7 +21,9 @@ public partial class MainWindow : Window
 	readonly CallBridgeServer server;
 	readonly DispatcherTimer levelTimer = new() { Interval = TimeSpan.FromMilliseconds(50) };
 	PhoneSession? session;
+	TrayIcon? tray;
 	bool loading = true;
+	bool quitting;
 
 	public MainWindow()
 	{
@@ -40,11 +43,51 @@ public partial class MainWindow : Window
 
 		server.PhoneConnected += s => Dispatcher.Invoke(() => OnPhoneConnected(s));
 		server.PhoneDisconnected += () => Dispatcher.Invoke(OnPhoneDisconnected);
-		server.Start();
+		try
+		{
+			server.Start();
+		}
+		catch (SocketException e)
+		{
+			MessageBox.Show($"Port {server.Port} is busy: {e.Message}", "CallBridge", MessageBoxButton.OK, MessageBoxImage.Error);
+			return;
+		}
 
+		tray = new TrayIcon(ShowFromTray, Quit);
 		levelTimer.Tick += (_, _) => MicLevel.Value = session?.MicLevel ?? 0;
 		levelTimer.Start();
-		Closed += (_, _) => server.Dispose();
+		Closing += OnClosing;
+		Closed += (_, _) =>
+		{
+			tray?.Dispose();
+			server.Dispose();
+		};
+		Ready = true;
+	}
+
+	public bool Ready { get; }
+
+	public void ShowFromTray()
+	{
+		Show();
+		if (WindowState == WindowState.Minimized)
+			WindowState = WindowState.Normal;
+		Activate();
+	}
+
+	void Quit()
+	{
+		quitting = true;
+		Application.Current.Shutdown();
+	}
+
+	void OnClosing(object? sender, System.ComponentModel.CancelEventArgs e)
+	{
+		if (quitting)
+			return;
+		e.Cancel = true;
+		Hide();
+		tray?.Notify("CallBridge", "Still running in the tray, calls will be shown here");
 	}
 
 	[DllImport("dwmapi.dll")]
@@ -146,6 +189,8 @@ public partial class MainWindow : Window
 			_ => "Waiting for a call",
 		};
 		var ringing = state.Call == CallState.Ringing;
+		if (ringing && (!IsVisible || !IsActive))
+			tray?.Notify("Incoming call", who);
 		AnswerButton.Visibility = ringing ? Visibility.Visible : Visibility.Collapsed;
 		RejectButton.Visibility = ringing ? Visibility.Visible : Visibility.Collapsed;
 		HangupButton.Visibility = state.Call is CallState.Active or CallState.Dialing or CallState.Held ? Visibility.Visible : Visibility.Collapsed;

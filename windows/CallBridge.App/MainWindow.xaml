@@ -1,7 +1,7 @@
 ﻿<Window x:Class="CallBridge.App.MainWindow"
 		xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-		Title="CallBridge" Width="440" Height="800" MinWidth="400" MinHeight="620"
+		Title="CallBridge" Icon="Assets/app.ico" Width="440" Height="800" MinWidth="400" MinHeight="620"
 		Background="#FF080B18" FontFamily="{StaticResource UiFont}" Foreground="{StaticResource TextPrimary}"
 		TextOptions.TextFormattingMode="Ideal" UseLayoutRounding="True">
 	<Window.Triggers>
