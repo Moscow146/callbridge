@@ -1,5 +1,6 @@
 using System.IO;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace CallBridge.App;
 
@@ -7,6 +8,9 @@ public sealed class AppSettings
 {
 	static readonly string Path = System.IO.Path.Combine(
 		Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "CallBridge", "settings.json");
+
+	[JsonIgnore]
+	public bool Persist { get; set; } = true;
 
 	public string? PairingCode { get; set; }
 
@@ -30,6 +34,8 @@ public sealed class AppSettings
 
 	public void Save()
 	{
+		if (!Persist)
+			return;
 		Directory.CreateDirectory(System.IO.Path.GetDirectoryName(Path)!);
 		File.WriteAllText(Path, JsonSerializer.Serialize(this));
 	}

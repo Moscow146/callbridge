@@ -17,17 +17,21 @@ namespace CallBridge.App;
 
 public partial class MainWindow : Window
 {
-	readonly AppSettings settings = AppSettings.Load();
+	readonly AppSettings settings;
 	readonly CallBridgeServer server;
 	readonly DispatcherTimer levelTimer = new() { Interval = TimeSpan.FromMilliseconds(50) };
+	readonly bool demo;
 	PhoneSession? session;
 	TrayIcon? tray;
 	bool loading = true;
 	bool quitting;
 
-	public MainWindow()
+	/// <param name="demoScene">When set, shows invented data instead of the real PC and phone: pairing, idle, ringing or call.</param>
+	public MainWindow(string? demoScene = null)
 	{
 		InitializeComponent();
+		demo = demoScene != null;
+		settings = demo ? new AppSettings { Persist = false, PairingCode = "0000000000000000" } : AppSettings.Load();
 		if (settings.PairingCode == null)
 		{
 			settings.PairingCode = CallBridgeServer.GenerateCode();
@@ -35,11 +39,19 @@ public partial class MainWindow : Window
 		}
 		server = new CallBridgeServer(settings.PairingCode);
 		ShowQr();
-		FillDevices(MicCombo, AudioDevices.Capture(), settings.MicId);
-		FillDevices(SpeakerCombo, AudioDevices.Render(), settings.SpeakerId);
+		FillDevices(MicCombo, demo ? DemoDevices.Microphones : AudioDevices.Capture(), settings.MicId);
+		FillDevices(SpeakerCombo, demo ? DemoDevices.Outputs : AudioDevices.Render(), settings.SpeakerId);
 		VolumeSlider.Value = settings.Volume;
 		VolumeText.Text = $"{settings.Volume * 100:0}%";
 		loading = false;
+
+		if (demo)
+		{
+			quitting = true;
+			ShowDemo(demoScene!);
+			Ready = true;
+			return;
+		}
 
 		server.PhoneConnected += s => Dispatcher.Invoke(() => OnPhoneConnected(s));
 		server.PhoneDisconnected += () => Dispatcher.Invoke(OnPhoneDisconnected);
@@ -103,8 +115,8 @@ public partial class MainWindow : Window
 
 	void ShowQr()
 	{
-		var hosts = new[] { "127.0.0.1" }.Concat(PairingInfo.LocalAddresses());
-		var uri = PairingInfo.BuildUri(settings.PairingCode!, CallBridgeServer.DefaultPort, hosts, Environment.MachineName);
+		var hosts = demo ? ["192.168.1.10"] : new[] { "127.0.0.1" }.Concat(PairingInfo.LocalAddresses());
+		var uri = PairingInfo.BuildUri(settings.PairingCode!, CallBridgeServer.DefaultPort, hosts, demo ? "My PC" : Environment.MachineName);
 		using var generator = new QRCodeGenerator();
 		var png = new PngByteQRCode(generator.CreateQrCode(uri, QRCodeGenerator.ECCLevel.M)).GetGraphic(10);
 		var image = new BitmapImage();
