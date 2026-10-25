@@ -1,12 +1,82 @@
 ﻿<Window x:Class="CallBridge.App.MainWindow"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:CallBridge.App"
-        mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    <Grid>
+		xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		Title="CallBridge" Width="520" Height="640" MinWidth="460" MinHeight="600"
+		Background="#F4F5F7" FontFamily="Segoe UI" FontSize="14">
+	<Window.Resources>
+		<Style x:Key="Card" TargetType="Border">
+			<Setter Property="Background" Value="White"/>
+			<Setter Property="CornerRadius" Value="10"/>
+			<Setter Property="Padding" Value="16"/>
+			<Setter Property="Margin" Value="0,0,0,12"/>
+		</Style>
+		<Style x:Key="Caption" TargetType="TextBlock">
+			<Setter Property="Foreground" Value="#6B7280"/>
+			<Setter Property="FontSize" Value="12"/>
+			<Setter Property="Margin" Value="0,0,0,4"/>
+		</Style>
+		<Style TargetType="Button">
+			<Setter Property="Padding" Value="14,8"/>
+			<Setter Property="Margin" Value="0,0,8,0"/>
+			<Setter Property="Cursor" Value="Hand"/>
+		</Style>
+		<Style TargetType="ToggleButton">
+			<Setter Property="Padding" Value="14,8"/>
+			<Setter Property="Margin" Value="0,0,8,0"/>
+			<Setter Property="Cursor" Value="Hand"/>
+		</Style>
+		<Style TargetType="ComboBox">
+			<Setter Property="Padding" Value="8,6"/>
+			<Setter Property="Margin" Value="0,0,0,12"/>
+		</Style>
+	</Window.Resources>
+	<ScrollViewer VerticalScrollBarVisibility="Auto">
+		<StackPanel Margin="16">
+			<Border Style="{StaticResource Card}">
+				<StackPanel>
+					<TextBlock Style="{StaticResource Caption}" Text="Pairing code"/>
+					<TextBlock x:Name="CodeText" FontSize="34" FontWeight="SemiBold" FontFamily="Consolas"/>
+					<TextBlock x:Name="AddressText" Foreground="#374151" Margin="0,4,0,0" TextWrapping="Wrap"/>
+					<TextBlock x:Name="PhoneText" Margin="0,8,0,0" Foreground="#B45309" Text="Phone not connected"/>
+				</StackPanel>
+			</Border>
 
-    </Grid>
+			<Border Style="{StaticResource Card}">
+				<StackPanel>
+					<TextBlock Style="{StaticResource Caption}" Text="Call"/>
+					<TextBlock x:Name="CallText" FontSize="20" FontWeight="SemiBold" Text="No call"/>
+					<TextBlock x:Name="RouteText" Foreground="#B91C1C" Margin="0,4,0,0" TextWrapping="Wrap"/>
+					<StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+						<Button x:Name="AnswerButton" Content="Answer" Click="OnAnswer" IsEnabled="False"/>
+						<Button x:Name="RejectButton" Content="Reject" Click="OnReject" IsEnabled="False"/>
+						<Button x:Name="HangupButton" Content="Hang up" Click="OnHangup" IsEnabled="False"/>
+					</StackPanel>
+					<Grid Margin="0,12,0,0">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="*"/>
+							<ColumnDefinition Width="Auto"/>
+						</Grid.ColumnDefinitions>
+						<TextBox x:Name="DialBox" Padding="8,6" VerticalContentAlignment="Center" KeyDown="OnDialKey"/>
+						<Button x:Name="DialButton" Grid.Column="1" Margin="8,0,0,0" Content="Call" Click="OnDial" IsEnabled="False"/>
+					</Grid>
+				</StackPanel>
+			</Border>
+
+			<Border Style="{StaticResource Card}">
+				<StackPanel>
+					<TextBlock Style="{StaticResource Caption}" Text="Microphone"/>
+					<ComboBox x:Name="MicCombo" SelectionChanged="OnDeviceChanged"/>
+					<ProgressBar x:Name="MicLevel" Height="6" Maximum="1" Margin="0,-4,0,12" Foreground="#16A34A"/>
+					<TextBlock Style="{StaticResource Caption}" Text="Output"/>
+					<ComboBox x:Name="SpeakerCombo" SelectionChanged="OnDeviceChanged"/>
+					<TextBlock Style="{StaticResource Caption}" Text="Volume"/>
+					<Slider x:Name="VolumeSlider" Minimum="0" Maximum="2" Value="1" ValueChanged="OnVolumeChanged" Margin="0,0,0,12"/>
+					<StackPanel Orientation="Horizontal">
+						<ToggleButton x:Name="MuteButton" Content="Mute microphone" Click="OnMuteClick"/>
+						<ToggleButton x:Name="DeafenButton" Content="Mute sound" Click="OnDeafenClick"/>
+					</StackPanel>
+				</StackPanel>
+			</Border>
+		</StackPanel>
+	</ScrollViewer>
 </Window>
