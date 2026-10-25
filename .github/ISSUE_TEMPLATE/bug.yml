@@ -1,0 +1,36 @@
+name: Bug
+description: Something does not work
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected, what you got.
+    validations:
+      required: true
+  - type: input
+    id: phone
+    attributes:
+      label: Phone and Android version
+      placeholder: Redmi K50 Ultra, HyperOS 3 (Android 15)
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: CallBridge version
+      placeholder: 0.1.1
+    validations:
+      required: true
+  - type: dropdown
+    id: link
+    attributes:
+      label: Connection
+      options: [USB (adb reverse), Wi-Fi, Not sure]
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: "`adb logcat -d -s CallBridge` and the red line from the PC window. Do not paste pairing codes or contacts."
+      render: shell

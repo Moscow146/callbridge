@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question or "does it work on my phone?"
+    url: https://github.com/Moscow146/callbridge/discussions
+    about: Ask in Discussions

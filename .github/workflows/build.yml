@@ -51,9 +51,12 @@ jobs:
         with:
           path: dist
           merge-multiple: true
+      - name: Collect files and checksums
+        run: |
+          mkdir out
+          find dist -type f \( -name CallBridge.exe -o -name callbridge-magisk.zip -o -name app-release.apk \) -exec cp {} out/ \;
+          cd out && sha256sum * > SHA256SUMS.txt
       - uses: softprops/action-gh-release@v2
         with:
-          files: |
-            dist/**/CallBridge.exe
-            dist/**/callbridge-magisk.zip
-            dist/**/app-release.apk
+          generate_release_notes: true
+          files: out/*

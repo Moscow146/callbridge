@@ -1,0 +1,17 @@
+version: 2
+updates:
+  - package-ecosystem: nuget
+    directory: /windows
+    schedule:
+      interval: weekly
+    labels: [dependencies, windows]
+  - package-ecosystem: gradle
+    directory: /android
+    schedule:
+      interval: weekly
+    labels: [dependencies, android]
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    labels: [dependencies]

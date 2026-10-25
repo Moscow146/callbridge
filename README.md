@@ -2,6 +2,13 @@
 
 <h1 align="center">CallBridge</h1>
 
+<p align="center">
+	<a href="https://github.com/Moscow146/callbridge/actions/workflows/build.yml"><img src="https://github.com/Moscow146/callbridge/actions/workflows/build.yml/badge.svg" alt="build"></a>
+	<a href="https://github.com/Moscow146/callbridge/releases/latest"><img src="https://img.shields.io/github/v/release/Moscow146/callbridge" alt="release"></a>
+	<a href="LICENSE"><img src="https://img.shields.io/github/license/Moscow146/callbridge" alt="license"></a>
+	<a href="https://moscow146.github.io/callbridge/"><img src="https://img.shields.io/badge/site-github%20pages-blue" alt="site"></a>
+</p>
+
 <p align="center">Take phone calls on your Windows PC: pick any mic and headphones, mute, and more. Android app + Windows .exe</p>
 
 <p align="center">
