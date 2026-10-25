@@ -18,7 +18,7 @@ jobs:
         run: dotnet test windows/CallBridge.sln
       - name: Publish
         run: ./scripts/publish-windows.ps1
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: CallBridge-windows
           path: build/windows/CallBridge.exe
@@ -33,7 +33,7 @@ jobs:
           java-version: 17
       - name: Build APK and Magisk module
         run: ./scripts/build-android.ps1 -Module
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: CallBridge-android
           path: |
