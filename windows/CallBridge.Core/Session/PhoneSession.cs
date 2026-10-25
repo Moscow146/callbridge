@@ -22,6 +22,9 @@ public sealed class PhoneSession : IDisposable
 
 	public bool Deafened { get; set; }
 
+	/// <summary>Linear gain applied to the microphone before it is encoded, 1 = unchanged.</summary>
+	public float MicGain { get; set; } = 1f;
+
 	public event Action<PhoneState>? StateChanged;
 
 	public event Action<string?>? AudioRouteChanged;
@@ -66,7 +69,7 @@ public sealed class PhoneSession : IDisposable
 		oldMic?.Dispose();
 	}
 
-	public float MicLevel => mic?.Level ?? 0f;
+	public float MicLevel => Math.Min(1f, (mic?.Level ?? 0f) * MicGain);
 
 	public float SpeakerVolume
 	{
@@ -81,6 +84,12 @@ public sealed class PhoneSession : IDisposable
 	{
 		if (Muted)
 			return;
+		var gain = MicGain;
+		if (gain != 1f)
+		{
+			for (var i = 0; i < pcm.Length; i++)
+				pcm[i] = (short)Math.Clamp(pcm[i] * gain, short.MinValue, short.MaxValue);
+		}
 		var packet = encoder.Encode(pcm);
 		_ = frames.WriteAsync(FrameType.Uplink, packet, cts.Token).ContinueWith(_ => { }, TaskContinuationOptions.OnlyOnFaulted);
 	}

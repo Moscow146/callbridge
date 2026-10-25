@@ -24,6 +24,7 @@ private const val RECONNECT_DELAY_MS = 3000L
 class BridgeService : Service(), BridgeConnection.Listener {
 	private val main = Handler(Looper.getMainLooper())
 	private lateinit var calls: CallController
+	private lateinit var ducker: EarpieceDucker
 	private var connection: BridgeConnection? = null
 	private var capture: DownlinkCapture? = null
 	private var pairing: Pairing? = null
@@ -45,6 +46,8 @@ class BridgeService : Service(), BridgeConnection.Listener {
 	override fun onCreate() {
 		super.onCreate()
 		calls = CallController(this)
+		ducker = EarpieceDucker(this)
+		ducker.restore()
 		val channel = NotificationChannel(CHANNEL_ID, getString(R.string.notification_channel), NotificationManager.IMPORTANCE_LOW)
 		getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
 		registerReceiver(phoneReceiver, IntentFilter(TelephonyManager.ACTION_PHONE_STATE_CHANGED), RECEIVER_EXPORTED)
@@ -87,8 +90,7 @@ class BridgeService : Service(), BridgeConnection.Listener {
 	}
 
 	private fun disconnect() {
-		capture?.stop()
-		capture = null
+		stopCapture()
 		connection?.close()
 		connection = null
 	}
@@ -107,8 +109,7 @@ class BridgeService : Service(), BridgeConnection.Listener {
 
 	override fun onClosed(reason: String) {
 		main.post {
-			capture?.stop()
-			capture = null
+			stopCapture()
 			if (stopping) return@post
 			if (reason == "wrong code") {
 				BridgeState.running = false
@@ -160,11 +161,13 @@ class BridgeService : Service(), BridgeConnection.Listener {
 		capture = DownlinkCapture(link::sendDownlink) { reason ->
 			link.sendControl(JSONObject().put("t", "audio").put("route", "unavailable").put("reason", reason))
 		}.also { it.start() }
+		ducker.duck()
 	}
 
 	private fun stopCapture() {
 		capture?.stop()
 		capture = null
+		ducker.restore()
 	}
 
 	override fun onDestroy() {

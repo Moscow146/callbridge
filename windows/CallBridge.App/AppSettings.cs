@@ -20,6 +20,8 @@ public sealed class AppSettings
 
 	public double Volume { get; set; } = 1;
 
+	public double MicGain { get; set; } = 1;
+
 	public static AppSettings Load()
 	{
 		try

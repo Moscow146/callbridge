@@ -45,6 +45,8 @@ public partial class MainWindow : Window
 		FillDevices(SpeakerCombo, demo ? DemoDevices.Outputs : AudioDevices.Render(), settings.SpeakerId);
 		VolumeSlider.Value = settings.Volume;
 		VolumeText.Text = $"{settings.Volume * 100:0}%";
+		MicGainSlider.Value = settings.MicGain;
+		MicGainText.Text = $"{settings.MicGain * 100:0}%";
 		loading = false;
 
 		if (demo)
@@ -157,6 +159,7 @@ public partial class MainWindow : Window
 		QrCard.Visibility = Visibility.Collapsed;
 		DialButton.IsEnabled = true;
 		ApplyDevices();
+		s.MicGain = (float)MicGainSlider.Value;
 		s.Muted = MuteButton.IsChecked == true;
 		s.Deafened = DeafenButton.IsChecked == true;
 	}
@@ -230,6 +233,17 @@ public partial class MainWindow : Window
 		VolumeText.Text = $"{e.NewValue * 100:0}%";
 		if (session != null)
 			session.SpeakerVolume = (float)e.NewValue;
+	}
+
+	void OnMicGainChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
+	{
+		if (loading)
+			return;
+		settings.MicGain = e.NewValue;
+		settings.Save();
+		MicGainText.Text = $"{e.NewValue * 100:0}%";
+		if (session != null)
+			session.MicGain = (float)e.NewValue;
 	}
 
 	void OnMuteClick(object sender, RoutedEventArgs e)

@@ -163,7 +163,17 @@
 					<StackPanel>
 						<TextBlock Style="{StaticResource Caption}" Text="MICROPHONE"/>
 						<ComboBox x:Name="MicCombo" Style="{StaticResource GlassCombo}" SelectionChanged="OnDeviceChanged"/>
-						<ProgressBar x:Name="MicLevel" Style="{StaticResource GlassMeter}" Maximum="1" Margin="8,10,8,16"/>
+						<ProgressBar x:Name="MicLevel" Style="{StaticResource GlassMeter}" Maximum="1" Margin="8,10,8,6"/>
+						<Grid Margin="4,4,4,12">
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="Auto"/>
+								<ColumnDefinition Width="*"/>
+								<ColumnDefinition Width="Auto"/>
+							</Grid.ColumnDefinitions>
+							<TextBlock Style="{StaticResource IconText}" Text="&#xE720;" FontSize="16" Foreground="{StaticResource TextSecondary}" Margin="0,0,12,0"/>
+							<Slider x:Name="MicGainSlider" Grid.Column="1" Style="{StaticResource GlassSlider}" Minimum="0" Maximum="3" Value="1" ValueChanged="OnMicGainChanged"/>
+							<TextBlock x:Name="MicGainText" Grid.Column="2" Text="100%" Foreground="{StaticResource TextSecondary}" FontSize="12" Width="42" TextAlignment="Right" VerticalAlignment="Center"/>
+						</Grid>
 
 						<TextBlock Style="{StaticResource Caption}" Text="OUTPUT"/>
 						<ComboBox x:Name="SpeakerCombo" Style="{StaticResource GlassCombo}" SelectionChanged="OnDeviceChanged"/>

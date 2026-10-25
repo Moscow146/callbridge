@@ -3,6 +3,7 @@ package dev.callbridge
 import android.media.AudioFormat
 import android.media.AudioRecord
 import android.media.MediaRecorder
+import android.util.Log
 
 private val RATES = intArrayOf(48000, 16000, 8000)
 
@@ -50,6 +51,19 @@ class DownlinkCapture(private val sink: (ByteArray) -> Unit, private val onFailu
 		return null
 	}
 
+	private var peak = 0
+	private var lastLog = 0L
+
+	/** Once per second, the loudest sample heard from the caller. */
+	private fun logLevel(samples: ShortArray, count: Int) {
+		for (i in 0 until count) peak = maxOf(peak, kotlin.math.abs(samples[i].toInt()))
+		val now = System.currentTimeMillis()
+		if (now - lastLog < 1000) return
+		Log.i("CallBridge", "downlink peak $peak")
+		peak = 0
+		lastLog = now
+	}
+
 	private fun run() {
 		val (record, rate) = open() ?: run {
 			onFailure("VOICE_DOWNLINK source is unavailable (needs system privileges)")
@@ -75,6 +89,7 @@ class DownlinkCapture(private val sink: (ByteArray) -> Unit, private val onFailu
 					}
 					continue
 				}
+				logLevel(chunk, read)
 				val resampled = resampler.process(chunk, read)
 				resampled.copyInto(pending, pendingSize)
 				pendingSize += resampled.size
