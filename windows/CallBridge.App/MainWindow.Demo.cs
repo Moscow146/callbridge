@@ -37,11 +37,28 @@ public partial class MainWindow
 		StatusDot.Fill = (System.Windows.Media.Brush)FindResource("Green");
 		QrCard.Visibility = Visibility.Collapsed;
 		DialButton.IsEnabled = true;
+		contacts =
+		[
+			new("Anna Smith", "+1 555 0100"),
+			new("Andrew Miller", "+1 555 0142"),
+			new("Hannah Brown", "+1 555 0177"),
+			new("Daniel Carter", "+1 555 0199"),
+		];
 		ShowState(scene switch
 		{
 			"ringing" => new PhoneState(CallState.Ringing, "+1 555 0100", "Anna Smith"),
 			"call" => new PhoneState(CallState.Active, "+1 555 0100", "Anna Smith"),
 			_ => new PhoneState(CallState.Idle, null, null),
 		});
+		if (scene == "suggest")
+		{
+			Topmost = true;
+			Loaded += (_, _) => Dispatcher.BeginInvoke(() =>
+			{
+				Activate();
+				DialBox.Focus();
+				DialBox.Text = "an";
+			}, System.Windows.Threading.DispatcherPriority.ApplicationIdle);
+		}
 	}
 }

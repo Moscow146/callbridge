@@ -141,8 +141,17 @@
 			<Setter.Value>
 				<ControlTemplate TargetType="TextBox">
 					<Border CornerRadius="22" Background="#26FFFFFF" BorderBrush="{StaticResource GlassRim}" BorderThickness="1" Height="44">
-						<ScrollViewer x:Name="PART_ContentHost" Margin="18,0" VerticalAlignment="Center"/>
+						<Grid>
+							<TextBlock x:Name="Hint" Text="{TemplateBinding Tag}" Margin="18,0" VerticalAlignment="Center" Foreground="#80F5F7FF"
+									   IsHitTestVisible="False" Visibility="Collapsed"/>
+							<ScrollViewer x:Name="PART_ContentHost" Margin="18,0" VerticalAlignment="Center"/>
+						</Grid>
 					</Border>
+					<ControlTemplate.Triggers>
+						<Trigger Property="Text" Value="">
+							<Setter TargetName="Hint" Property="Visibility" Value="Visible"/>
+						</Trigger>
+					</ControlTemplate.Triggers>
 				</ControlTemplate>
 			</Setter.Value>
 		</Setter>

@@ -4,6 +4,29 @@
 		Title="CallBridge" Icon="Assets/app.ico" Width="440" Height="800" MinWidth="400" MinHeight="620"
 		Background="#FF080B18" FontFamily="{StaticResource UiFont}" Foreground="{StaticResource TextPrimary}"
 		TextOptions.TextFormattingMode="Ideal" UseLayoutRounding="True">
+	<Window.Resources>
+		<Style x:Key="GlassListItem" TargetType="ListBoxItem">
+			<EventSetter Event="PreviewMouseLeftButtonUp" Handler="OnSuggestionClick"/>
+			<Setter Property="Template">
+				<Setter.Value>
+					<ControlTemplate TargetType="ListBoxItem">
+						<Border x:Name="Bd" CornerRadius="14" Margin="6,2" Padding="14,8" Background="Transparent" Cursor="Hand">
+							<ContentPresenter/>
+						</Border>
+						<ControlTemplate.Triggers>
+							<Trigger Property="IsMouseOver" Value="True">
+								<Setter TargetName="Bd" Property="Background" Value="#2EFFFFFF"/>
+							</Trigger>
+							<Trigger Property="IsSelected" Value="True">
+								<Setter TargetName="Bd" Property="Background" Value="#47FFFFFF"/>
+							</Trigger>
+						</ControlTemplate.Triggers>
+					</ControlTemplate>
+				</Setter.Value>
+			</Setter>
+		</Style>
+	</Window.Resources>
+
 	<Window.Triggers>
 		<EventTrigger RoutedEvent="FrameworkElement.Loaded">
 			<BeginStoryboard>
@@ -107,12 +130,31 @@
 								<ColumnDefinition Width="*"/>
 								<ColumnDefinition Width="Auto"/>
 							</Grid.ColumnDefinitions>
-							<TextBox x:Name="DialBox" Style="{StaticResource GlassTextBox}" KeyDown="OnDialKey"/>
+							<TextBox x:Name="DialBox" Style="{StaticResource GlassTextBox}" Tag="Name or number" TextChanged="OnDialTextChanged"
+									 PreviewKeyDown="OnDialKey" LostKeyboardFocus="OnDialLostFocus"/>
+							<Popup x:Name="SuggestionPopup" PlacementTarget="{Binding ElementName=DialBox}" Placement="Bottom" AllowsTransparency="True"
+								   StaysOpen="True" Focusable="False" PopupAnimation="Fade">
+								<Border Width="{Binding ActualWidth, ElementName=DialBox}" Margin="0,6,0,24" CornerRadius="22" Background="#F2161B30"
+										BorderBrush="{StaticResource GlassRim}" BorderThickness="1" Effect="{StaticResource CardShadow}">
+									<ListBox x:Name="SuggestionList" Background="Transparent" BorderThickness="0" Margin="0,8" Focusable="False"
+											 ItemContainerStyle="{StaticResource GlassListItem}">
+										<ListBox.ItemTemplate>
+											<DataTemplate>
+												<StackPanel>
+													<TextBlock Text="{Binding Name}" FontSize="14" FontWeight="SemiBold" Foreground="{StaticResource TextPrimary}" TextTrimming="CharacterEllipsis"/>
+													<TextBlock Text="{Binding Number}" FontSize="12" Foreground="{StaticResource TextSecondary}"/>
+												</StackPanel>
+											</DataTemplate>
+										</ListBox.ItemTemplate>
+									</ListBox>
+								</Border>
+							</Popup>
 							<Button x:Name="DialButton" Grid.Column="1" Margin="10,0,0,0" Width="44" Height="44" Padding="0" Style="{StaticResource GlassButton}"
 									Background="{StaticResource GreenFill}" Click="OnDial" IsEnabled="False">
 								<TextBlock Style="{StaticResource IconText}" Text="&#xE717;" FontSize="16"/>
 							</Button>
 						</Grid>
+						<TextBlock x:Name="DialHint" Foreground="{StaticResource Red}" FontSize="12" Margin="6,8,0,0" Visibility="Collapsed"/>
 					</StackPanel>
 				</Border>
 

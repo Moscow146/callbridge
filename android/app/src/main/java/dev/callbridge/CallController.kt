@@ -5,7 +5,12 @@ import android.content.Context
 import android.net.Uri
 import android.os.Bundle
 import android.provider.ContactsContract
+import android.provider.ContactsContract.CommonDataKinds.Phone
 import android.telecom.TelecomManager
+import org.json.JSONArray
+import org.json.JSONObject
+
+private const val MAX_CONTACTS_JSON = 800_000
 
 /** Answers, ends and places calls through the system Telecom service. */
 class CallController(private val context: Context) {
@@ -23,6 +28,29 @@ class CallController(private val context: Context) {
 	@SuppressLint("MissingPermission")
 	fun dial(number: String) {
 		telecom.placeCall(Uri.fromParts("tel", number, null), Bundle())
+	}
+
+	/** Every contact phone number as {name, number}, capped so the control frame stays small. */
+	fun contacts(): JSONArray {
+		val result = JSONArray()
+		val seen = HashSet<String>()
+		var size = 0
+		runCatching {
+			context.contentResolver.query(
+				Phone.CONTENT_URI, arrayOf(Phone.DISPLAY_NAME, Phone.NUMBER), null, null, "${Phone.DISPLAY_NAME} COLLATE LOCALIZED ASC"
+			)?.use { cursor ->
+				while (cursor.moveToNext()) {
+					val name = cursor.getString(0) ?: continue
+					val number = cursor.getString(1) ?: continue
+					if (!seen.add(name + number.filter(Char::isDigit))) continue
+					val item = JSONObject().put("name", name).put("number", number)
+					size += item.toString().length
+					if (size > MAX_CONTACTS_JSON) break
+					result.put(item)
+				}
+			}
+		}
+		return result
 	}
 
 	fun contactName(number: String?): String? {

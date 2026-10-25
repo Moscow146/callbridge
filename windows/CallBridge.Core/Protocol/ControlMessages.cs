@@ -18,6 +18,8 @@ public sealed record HelloAck(int Version, bool Ok, string? Error = null);
 
 public sealed record PhoneState(CallState Call, string? Number, string? Name);
 
+public sealed record Contact(string Name, string Number);
+
 public static class Json
 {
 	public const int ProtocolVersion = 1;

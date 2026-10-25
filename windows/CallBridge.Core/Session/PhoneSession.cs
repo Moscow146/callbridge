@@ -26,6 +26,8 @@ public sealed class PhoneSession : IDisposable
 
 	public event Action<string?>? AudioRouteChanged;
 
+	public event Action<IReadOnlyList<Contact>>? ContactsChanged;
+
 	public event Action? Closed;
 
 	public PhoneSession(TcpClient client)
@@ -134,6 +136,11 @@ public sealed class PhoneSession : IDisposable
 				var state = root.Deserialize<PhoneState>(Json.Options);
 				if (state != null)
 					StateChanged?.Invoke(state);
+				break;
+			case "contacts":
+				var items = root.TryGetProperty("items", out var array) ? array.Deserialize<List<Contact>>(Json.Options) : null;
+				if (items != null)
+					ContactsChanged?.Invoke(items);
 				break;
 			case "audio":
 				var ok = root.TryGetProperty("route", out var r) && r.GetString() == "ok";

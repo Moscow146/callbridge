@@ -8,6 +8,7 @@
 	<img src="docs/screenshots/windows-pairing.png" width="230" alt="Pairing">
 	<img src="docs/screenshots/windows-ringing.png" width="230" alt="Incoming call">
 	<img src="docs/screenshots/windows-call.png" width="230" alt="In call">
+	<img src="docs/screenshots/windows-suggest.png" width="230" alt="Contact suggestions">
 </p>
 
 <p align="center"><img src="docs/screenshots/android-connected.png" width="300" alt="Android app"></p>
@@ -18,7 +19,7 @@ The phone stays in your pocket. Its cellular call audio is streamed to the PC, s
 
 | Part | State |
 |------|-------|
-| Windows app (WPF, WASAPI, Opus), tray, incoming call notification | works: device pickers, volume, mute, answer / reject / hang up / dial |
+| Windows app (WPF, WASAPI, Opus), tray, incoming call notification | works: device pickers, volume, mute, answer / reject / hang up / dial with contact suggestions |
 | Android app: call state, answer, hang up, dial, QR pairing | implemented |
 | Android app: caller audio to PC | implemented (`VOICE_DOWNLINK`), needs the app installed as a system app |
 | PC microphone into the call | not implemented yet, see below |

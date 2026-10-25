@@ -21,6 +21,8 @@ public partial class MainWindow : Window
 	readonly CallBridgeServer server;
 	readonly DispatcherTimer levelTimer = new() { Interval = TimeSpan.FromMilliseconds(50) };
 	readonly bool demo;
+	IReadOnlyList<Contact> contacts = [];
+	Contact? picked;
 	PhoneSession? session;
 	TrayIcon? tray;
 	bool loading = true;
@@ -148,6 +150,7 @@ public partial class MainWindow : Window
 	{
 		session = s;
 		s.StateChanged += state => Dispatcher.Invoke(() => ShowState(state));
+		s.ContactsChanged += list => Dispatcher.Invoke(() => contacts = list);
 		s.AudioRouteChanged += reason => Dispatcher.Invoke(() => ShowRoute(reason == null ? null : $"Call audio unavailable: {reason}"));
 		StatusText.Text = $"Connected · {s.DeviceName}";
 		StatusDot.Fill = (Brush)FindResource("Green");
@@ -249,14 +252,99 @@ public partial class MainWindow : Window
 
 	void OnDial(object sender, RoutedEventArgs e)
 	{
-		var number = DialBox.Text.Trim();
-		if (number.Length > 0)
-			_ = session?.SendCommandAsync("dial", new { Number = number });
+		var text = DialBox.Text.Trim();
+		if (text.Length == 0)
+			return;
+		var number = ResolveNumber(text);
+		if (number == null)
+		{
+			ShowDialHint("No such contact. Type a number or pick a contact from the list");
+			return;
+		}
+		SuggestionPopup.IsOpen = false;
+		_ = session?.SendCommandAsync("dial", new { Number = number });
+	}
+
+	static bool LooksLikeNumber(string text) => text.All(c => char.IsDigit(c) || "+*#-() ".Contains(c));
+
+	static string Digits(string text) => new(text.Where(char.IsDigit).ToArray());
+
+	string? ResolveNumber(string text)
+	{
+		if (picked != null && text == picked.Name)
+			return picked.Number;
+		if (LooksLikeNumber(text))
+			return text;
+		if (SuggestionList.SelectedItem is Contact suggested)
+		{
+			Pick(suggested);
+			return suggested.Number;
+		}
+		return null;
+	}
+
+	void Pick(Contact contact)
+	{
+		picked = contact;
+		SuggestionPopup.IsOpen = false;
+		DialBox.Text = contact.Name;
+		DialBox.CaretIndex = DialBox.Text.Length;
+	}
+
+	void ShowDialHint(string? message)
+	{
+		DialHint.Text = message ?? "";
+		DialHint.Visibility = message == null ? Visibility.Collapsed : Visibility.Visible;
+	}
+
+	void OnDialTextChanged(object sender, TextChangedEventArgs e)
+	{
+		ShowDialHint(null);
+		var text = DialBox.Text.Trim();
+		if (picked != null && text != picked.Name)
+			picked = null;
+		if (picked != null || text.Length == 0 || !DialBox.IsKeyboardFocusWithin)
+		{
+			SuggestionPopup.IsOpen = false;
+			return;
+		}
+		var digits = Digits(text);
+		var matches = contacts
+			.Where(c => c.Name.Contains(text, StringComparison.CurrentCultureIgnoreCase) || (digits.Length >= 2 && Digits(c.Number).Contains(digits)))
+			.Take(6)
+			.ToList();
+		SuggestionList.ItemsSource = matches;
+		SuggestionList.SelectedIndex = matches.Count > 0 ? 0 : -1;
+		SuggestionPopup.IsOpen = matches.Count > 0;
 	}
 
 	void OnDialKey(object sender, KeyEventArgs e)
 	{
-		if (e.Key == Key.Enter && DialButton.IsEnabled)
-			OnDial(sender, e);
+		switch (e.Key)
+		{
+			case Key.Down or Key.Up when SuggestionPopup.IsOpen:
+				var count = SuggestionList.Items.Count;
+				SuggestionList.SelectedIndex = (SuggestionList.SelectedIndex + (e.Key == Key.Down ? 1 : count - 1)) % count;
+				e.Handled = true;
+				break;
+			case Key.Escape:
+				SuggestionPopup.IsOpen = false;
+				break;
+			case Key.Enter when DialButton.IsEnabled:
+				OnDial(sender, e);
+				e.Handled = true;
+				break;
+		}
+	}
+
+	void OnDialLostFocus(object sender, KeyboardFocusChangedEventArgs e) => SuggestionPopup.IsOpen = false;
+
+	void OnSuggestionClick(object sender, MouseButtonEventArgs e)
+	{
+		if (sender is ListBoxItem { DataContext: Contact contact })
+		{
+			Pick(contact);
+			DialBox.Focus();
+		}
 	}
 }

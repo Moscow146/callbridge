@@ -99,6 +99,10 @@ class BridgeService : Service(), BridgeConnection.Listener {
 			sendState(lastCall, lastNumber)
 			if (lastCall == "active") startCapture()
 		}
+		val link = connection ?: return
+		Thread {
+			link.sendControl(JSONObject().put("t", "contacts").put("items", calls.contacts()))
+		}.start()
 	}
 
 	override fun onClosed(reason: String) {
