@@ -3,23 +3,23 @@ package dev.callbridge
 import android.content.Context
 import android.media.AudioManager
 
-private const val SAVED_VOLUME = "saved_voice_volume"
+private const val MUTED = "voice_call_muted"
 
-/** Turns the phone's own call volume down while the call is heard on the PC, and puts it back afterwards. */
+/** Silences the phone's own call output while the call is heard on the PC, and unmutes it afterwards. */
 class EarpieceDucker(context: Context) {
 	private val audio = context.getSystemService(AudioManager::class.java)
 	private val prefs = context.getSharedPreferences("bridge", Context.MODE_PRIVATE)
 
 	fun duck() {
-		if (prefs.contains(SAVED_VOLUME)) return
-		prefs.edit().putInt(SAVED_VOLUME, audio.getStreamVolume(AudioManager.STREAM_VOICE_CALL)).apply()
-		audio.setStreamVolume(AudioManager.STREAM_VOICE_CALL, audio.getStreamMinVolume(AudioManager.STREAM_VOICE_CALL), 0)
+		if (prefs.getBoolean(MUTED, false)) return
+		prefs.edit().putBoolean(MUTED, true).apply()
+		audio.adjustStreamVolume(AudioManager.STREAM_VOICE_CALL, AudioManager.ADJUST_MUTE, 0)
 	}
 
-	/** Also covers a crash while ducked: the saved value survives in preferences. */
+	/** Also covers a crash while muted: the flag survives in preferences. */
 	fun restore() {
-		if (!prefs.contains(SAVED_VOLUME)) return
-		audio.setStreamVolume(AudioManager.STREAM_VOICE_CALL, prefs.getInt(SAVED_VOLUME, 1), 0)
-		prefs.edit().remove(SAVED_VOLUME).apply()
+		if (!prefs.getBoolean(MUTED, false)) return
+		audio.adjustStreamVolume(AudioManager.STREAM_VOICE_CALL, AudioManager.ADJUST_UNMUTE, 0)
+		prefs.edit().putBoolean(MUTED, false).apply()
 	}
 }

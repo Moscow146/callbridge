@@ -27,6 +27,7 @@ class BridgeService : Service(), BridgeConnection.Listener {
 	private lateinit var ducker: EarpieceDucker
 	private var connection: BridgeConnection? = null
 	private var capture: DownlinkCapture? = null
+	@Volatile private var uplink: UplinkPlayer? = null
 	private var pairing: Pairing? = null
 	private var lastNumber: String? = null
 	private var lastCall = "idle"
@@ -134,6 +135,7 @@ class BridgeService : Service(), BridgeConnection.Listener {
 	}
 
 	override fun onUplink(packet: ByteArray) {
+		uplink?.push(packet)
 	}
 
 	private fun onCallState(state: String, number: String?) {
@@ -161,12 +163,17 @@ class BridgeService : Service(), BridgeConnection.Listener {
 		capture = DownlinkCapture(link::sendDownlink) { reason ->
 			link.sendControl(JSONObject().put("t", "audio").put("route", "unavailable").put("reason", reason))
 		}.also { it.start() }
+		uplink = UplinkPlayer(this) { reason ->
+			link.sendControl(JSONObject().put("t", "audio").put("route", "unavailable").put("reason", reason))
+		}.also { it.start() }
 		ducker.duck()
 	}
 
 	private fun stopCapture() {
 		capture?.stop()
 		capture = null
+		uplink?.stop()
+		uplink = null
 		ducker.restore()
 	}
 

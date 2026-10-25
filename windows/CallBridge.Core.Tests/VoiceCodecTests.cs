@@ -1,15 +1,19 @@
 using CallBridge.Core.Audio;
+using Concentus;
+using Concentus.Enums;
 
 namespace CallBridge.Core.Tests;
 
 public class VoiceCodecTests
 {
 	[Fact]
-	public void SineSurvivesRoundTrip()
+	public void DecodesWhatThePhoneSends()
 	{
-		var encoder = new VoiceEncoder();
+		var encoder = OpusCodecFactory.CreateEncoder(VoiceFormat.SampleRate, 1, OpusApplication.OPUS_APPLICATION_VOIP);
+		encoder.Bitrate = 32000;
 		var decoder = new VoiceDecoder();
 		var pcm = new short[VoiceFormat.FrameSamples];
+		var packet = new byte[1275];
 		short[] decoded = [];
 		for (var frame = 0; frame < 10; frame++)
 		{
@@ -18,9 +22,9 @@ public class VoiceCodecTests
 				var t = (frame * pcm.Length + i) / (double)VoiceFormat.SampleRate;
 				pcm[i] = (short)(Math.Sin(2 * Math.PI * 440 * t) * 12000);
 			}
-			var packet = encoder.Encode(pcm);
-			Assert.InRange(packet.Length, 1, 200);
-			decoded = decoder.Decode(packet);
+			var length = encoder.Encode(pcm, VoiceFormat.FrameSamples, packet, packet.Length);
+			Assert.InRange(length, 1, 200);
+			decoded = decoder.Decode(packet.AsSpan(0, length));
 		}
 		Assert.Equal(VoiceFormat.FrameSamples, decoded.Length);
 		Assert.True(decoded.Max(s => Math.Abs((int)s)) > 4000);

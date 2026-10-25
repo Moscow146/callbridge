@@ -22,11 +22,8 @@ The phone stays in your pocket. Its cellular call audio is streamed to the PC, s
 | Windows app (WPF, WASAPI, Opus), tray, incoming call notification | works: device pickers, volume, mute, answer / reject / hang up / dial with contact suggestions |
 | Android app: call state, answer, hang up, dial, QR pairing | implemented |
 | Android app: caller audio to PC | implemented (`VOICE_DOWNLINK`), needs the app installed as a system app |
-| PC microphone into the call | not implemented yet, see below |
+| PC microphone into the call | works: an AudioTrack routed to the telephony transmit device, the phone itself stays silent during the call |
 
-### PC microphone into the call
-
-The audio HAL of Snapdragon devices exposes an `incall_music_uplink` output (`AUDIO_OUTPUT_FLAG_INCALL_MUSIC`) routed to `Telephony Tx`. Regular Java `AudioTrack` cannot request that flag, so it needs a native helper. That is the next step.
 
 ## Requirements
 

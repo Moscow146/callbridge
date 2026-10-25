@@ -11,7 +11,6 @@ public sealed class PhoneSession : IDisposable
 	readonly TcpClient client;
 	readonly FrameStream frames;
 	readonly VoiceDecoder decoder = new();
-	readonly VoiceEncoder encoder = new();
 	readonly CancellationTokenSource cts = new();
 	SpeakerPlayer? speaker;
 	MicCapture? mic;
@@ -90,8 +89,9 @@ public sealed class PhoneSession : IDisposable
 			for (var i = 0; i < pcm.Length; i++)
 				pcm[i] = (short)Math.Clamp(pcm[i] * gain, short.MinValue, short.MaxValue);
 		}
-		var packet = encoder.Encode(pcm);
-		_ = frames.WriteAsync(FrameType.Uplink, packet, cts.Token).ContinueWith(_ => { }, TaskContinuationOptions.OnlyOnFaulted);
+		var bytes = new byte[pcm.Length * 2];
+		Buffer.BlockCopy(pcm, 0, bytes, 0, bytes.Length);
+		_ = frames.WriteAsync(FrameType.Uplink, bytes, cts.Token).ContinueWith(_ => { }, TaskContinuationOptions.OnlyOnFaulted);
 	}
 
 	public Task SendCommandAsync(string type, object? extra = null) =>

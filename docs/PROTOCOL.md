@@ -21,14 +21,16 @@ Max payload: 1 MiB. A larger frame closes the connection.
 | 0x01  | Hello      | phone→PC  | JSON `{version, device, token}` |
 | 0x02  | HelloAck   | PC→phone  | JSON `{version, ok, error?}`   |
 | 0x10  | Downlink   | phone→PC  | one Opus packet, call audio from the remote side |
-| 0x11  | Uplink     | PC→phone  | one Opus packet, PC microphone to the remote side |
+| 0x11  | Uplink     | PC→phone  | 960 little-endian int16 samples, PC microphone to the remote side |
 | 0x20  | Control    | both      | JSON, see below                |
 | 0x30  | Ping       | both      | 8 bytes, sender timestamp      |
 | 0x31  | Pong       | both      | the same 8 bytes               |
 
 ## Audio
 
-Opus, 48 kHz, mono, 20 ms frames, VoIP application, in-band FEC on, 32 kbit/s. One frame is one packet.
+48 kHz, mono, 20 ms frames.
+
+Downlink (caller to PC) is Opus, VoIP application, 32 kbit/s, one frame per packet. Uplink (PC microphone to caller) is raw 16-bit PCM, because the phone only has to hand it to the telephony transmit path and the link is a LAN or USB.
 
 ## Control messages
 
