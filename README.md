@@ -10,6 +10,8 @@
 	<img src="docs/screenshots/windows-call.png" width="230" alt="In call">
 </p>
 
+<p align="center"><img src="docs/screenshots/android-connected.png" width="300" alt="Android app"></p>
+
 The phone stays in your pocket. Its cellular call audio is streamed to the PC, so you hear the caller in the headphones you choose and talk into the microphone you choose.
 
 ## Status
