@@ -9,6 +9,8 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.ServiceInfo
+import android.database.ContentObserver
+import android.provider.ContactsContract
 import android.os.Build
 import android.os.Handler
 import android.os.IBinder
@@ -19,6 +21,7 @@ import org.json.JSONObject
 private const val CHANNEL_ID = "bridge"
 private const val NOTIFICATION_ID = 1
 private const val RECONNECT_DELAY_MS = 3000L
+private const val CONTACTS_DEBOUNCE_MS = 3000L
 
 /** Keeps the connection to the PC alive and forwards call audio and control. */
 class BridgeService : Service(), BridgeConnection.Listener {
@@ -32,6 +35,15 @@ class BridgeService : Service(), BridgeConnection.Listener {
 	private var lastNumber: String? = null
 	private var lastCall = "idle"
 	private var stopping = false
+
+	private val sendContactsTask = Runnable { sendContacts() }
+
+	private val contactsObserver = object : ContentObserver(main) {
+		override fun onChange(selfChange: Boolean) {
+			main.removeCallbacks(sendContactsTask)
+			main.postDelayed(sendContactsTask, CONTACTS_DEBOUNCE_MS)
+		}
+	}
 
 	private val phoneReceiver = object : BroadcastReceiver() {
 		override fun onReceive(context: Context, intent: Intent) {
@@ -52,9 +64,14 @@ class BridgeService : Service(), BridgeConnection.Listener {
 		val channel = NotificationChannel(CHANNEL_ID, getString(R.string.notification_channel), NotificationManager.IMPORTANCE_LOW)
 		getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
 		registerReceiver(phoneReceiver, IntentFilter(TelephonyManager.ACTION_PHONE_STATE_CHANGED), RECEIVER_EXPORTED)
+		contentResolver.registerContentObserver(ContactsContract.Contacts.CONTENT_URI, true, contactsObserver)
 	}
 
 	override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+		if (intent?.action == ACTION_CONTACTS) {
+			sendContacts()
+			return START_NOT_STICKY
+		}
 		if (intent?.action == ACTION_STOP) {
 			stopping = true
 			disconnect()
@@ -110,6 +127,10 @@ class BridgeService : Service(), BridgeConnection.Listener {
 			sendState(lastCall, lastNumber)
 			if (lastCall == "active") startCapture()
 		}
+		sendContacts()
+	}
+
+	private fun sendContacts() {
 		val link = connection ?: return
 		Thread {
 			link.sendControl(JSONObject().put("t", "contacts").put("items", calls.contacts()))
@@ -138,6 +159,7 @@ class BridgeService : Service(), BridgeConnection.Listener {
 				"answer" -> calls.answer()
 				"reject", "hangup" -> calls.hangup()
 				"dial" -> calls.dial(message.optString("number"))
+				"contacts" -> sendContacts()
 			}
 		}
 	}
@@ -186,6 +208,7 @@ class BridgeService : Service(), BridgeConnection.Listener {
 	}
 
 	override fun onDestroy() {
+		contentResolver.unregisterContentObserver(contactsObserver)
 		unregisterReceiver(phoneReceiver)
 		disconnect()
 		super.onDestroy()
@@ -195,5 +218,6 @@ class BridgeService : Service(), BridgeConnection.Listener {
 
 	companion object {
 		const val ACTION_STOP = "dev.callbridge.STOP"
+		const val ACTION_CONTACTS = "dev.callbridge.CONTACTS"
 	}
 }

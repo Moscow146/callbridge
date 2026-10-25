@@ -362,6 +362,13 @@ public partial class MainWindow : Window
 		}
 	}
 
+	/// <summary>The phone may have connected before it was allowed to read contacts, so ask again.</summary>
+	void OnDialFocus(object sender, KeyboardFocusChangedEventArgs e)
+	{
+		if (contacts.Count == 0)
+			_ = session?.SendCommandAsync("contacts");
+	}
+
 	void OnDialLostFocus(object sender, KeyboardFocusChangedEventArgs e) => SuggestionPopup.IsOpen = false;
 
 	void OnSuggestionClick(object sender, MouseButtonEventArgs e)

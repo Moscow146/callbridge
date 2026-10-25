@@ -69,6 +69,11 @@ class MainActivity : Activity() {
 		refresh()
 	}
 
+	override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+		super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+		if (BridgeState.running) startService(Intent(this, BridgeService::class.java).setAction(BridgeService.ACTION_CONTACTS))
+	}
+
 	override fun onStart() {
 		super.onStart()
 		BridgeState.observe(observer)

@@ -40,6 +40,7 @@ Phone→PC:
 
 - `{"t":"state","call":"idle|ringing|dialing|active|held","number":"+7...","name":"..."}`
 - `{"t":"audio","route":"ok|unavailable","reason":"..."}`
+- `{"t":"contacts","items":[{"name":"...","number":"..."}]}`: sent on connect, when contacts change, when the contacts permission is granted, and when the PC asks for it
 
 PC→phone:
 
@@ -47,6 +48,7 @@ PC→phone:
 - `{"t":"hangup"}`
 - `{"t":"reject"}`
 - `{"t":"dial","number":"+7..."}`
+- `{"t":"contacts"}`: asks the phone to send its contacts again
 
 ## Pairing
 
