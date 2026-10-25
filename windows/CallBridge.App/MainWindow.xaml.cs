@@ -343,6 +343,7 @@ public partial class MainWindow : Window
 	{
 		if (sender is ListBoxItem { DataContext: Contact contact })
 		{
+			e.Handled = true;
 			Pick(contact);
 			DialBox.Focus();
 		}

@@ -6,7 +6,8 @@
 		TextOptions.TextFormattingMode="Ideal" UseLayoutRounding="True">
 	<Window.Resources>
 		<Style x:Key="GlassListItem" TargetType="ListBoxItem">
-			<EventSetter Event="PreviewMouseLeftButtonUp" Handler="OnSuggestionClick"/>
+			<EventSetter Event="PreviewMouseLeftButtonDown" Handler="OnSuggestionClick"/>
+			<Setter Property="Focusable" Value="False"/>
 			<Setter Property="Template">
 				<Setter.Value>
 					<ControlTemplate TargetType="ListBoxItem">
