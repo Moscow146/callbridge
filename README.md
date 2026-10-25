@@ -4,12 +4,6 @@
 
 <p align="center">Take phone calls on your Windows PC: pick any mic and headphones, mute, and more. Android app + Windows .exe</p>
 
-<p align="center">
-	<img src="docs/screenshots/windows.png" width="300" alt="Windows app">
-	&nbsp;
-	<img src="docs/screenshots/android.png" width="150" alt="Android app">
-</p>
-
 The phone stays in your pocket. Its cellular call audio is streamed to the PC, so you hear the caller in the headphones you choose and talk into the microphone you choose.
 
 ## Status
