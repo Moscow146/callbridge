@@ -1,9 +1,11 @@
 package dev.callbridge
 
+import org.json.JSONException
 import org.json.JSONObject
 import java.io.IOException
 import java.net.InetSocketAddress
 import java.net.Socket
+import java.util.concurrent.Executors
 
 private const val CONNECT_TIMEOUT_MS = 1500
 
@@ -22,6 +24,7 @@ class BridgeConnection(
 
 	private var socket: Socket? = null
 	private var frames: FrameStream? = null
+	private val sender = Executors.newSingleThreadExecutor()
 	@Volatile private var closed = false
 
 	fun start() {
@@ -30,6 +33,7 @@ class BridgeConnection(
 
 	fun close() {
 		closed = true
+		sender.shutdown()
 		runCatching { socket?.close() }
 	}
 
@@ -37,12 +41,16 @@ class BridgeConnection(
 
 	fun sendControl(message: JSONObject) = send(FrameType.CONTROL, message.toString().toByteArray())
 
+	/** Writes on a dedicated thread: callers run on the main thread or the audio thread. */
 	private fun send(type: Int, payload: ByteArray) {
-		val stream = frames ?: return
-		try {
-			stream.write(type, payload)
-		} catch (e: IOException) {
-			runCatching { socket?.close() }
+		if (sender.isShutdown) return
+		sender.execute {
+			val stream = frames ?: return@execute
+			try {
+				stream.write(type, payload)
+			} catch (e: IOException) {
+				runCatching { socket?.close() }
+			}
 		}
 	}
 
@@ -89,10 +97,13 @@ class BridgeConnection(
 			}
 		} catch (e: IOException) {
 			reason = e.message ?: "connection error"
+		} catch (e: JSONException) {
+			reason = "bad message from PC"
 		} finally {
 			frames = null
+			sender.shutdown()
 			runCatching { socket?.close() }
-			listener.onClosed(if (closed) "stopped" else reason)
+			if (!closed) listener.onClosed(reason)
 		}
 	}
 }
