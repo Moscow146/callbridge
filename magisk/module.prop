@@ -1,0 +1,6 @@
+id=callbridge
+name=CallBridge
+version=0.1.0
+versionCode=1
+author=Moscow146
+description=Installs CallBridge as a privileged system app so it can capture call audio.

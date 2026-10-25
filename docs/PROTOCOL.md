@@ -45,8 +45,6 @@ PC→phone:
 - `{"t":"hangup"}`
 - `{"t":"reject"}`
 - `{"t":"dial","number":"+7..."}`
-- `{"t":"hold","on":true}`
-- `{"t":"dtmf","digit":"5"}`
 
 ## Pairing
 
