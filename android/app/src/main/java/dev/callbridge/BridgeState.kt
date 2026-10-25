@@ -8,13 +8,17 @@ object BridgeState {
 	private val handler = Handler(Looper.getMainLooper())
 	private val listeners = mutableSetOf<(String) -> Unit>()
 
-	var status: String = "Disconnected"
+	var status: String = ""
+		private set
+
+	var connected: Boolean = false
 		private set
 
 	var running: Boolean = false
 
-	fun update(text: String) {
+	fun update(text: String, connected: Boolean = false) {
 		status = text
+		this.connected = connected
 		handler.post { listeners.toList().forEach { it(text) } }
 	}
 

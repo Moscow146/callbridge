@@ -1,0 +1,19 @@
+<resources>
+	<string name="scan_qr">Сканировать QR-код</string>
+	<string name="pair_other">Подключить другой ПК</string>
+	<string name="connect">Подключить</string>
+	<string name="disconnect">Отключить</string>
+	<string name="notification_channel">Связь с ПК</string>
+	<string name="notification_text">Мост с %1$s</string>
+	<string name="paired_with">Связан с %1$s</string>
+	<string name="not_paired">Ещё не связан с ПК</string>
+	<string name="pill_connected">● На связи</string>
+	<string name="pill_connecting">● Подключение</string>
+	<string name="pill_offline">Не в сети</string>
+	<string name="status_disconnected">Отключено</string>
+	<string name="status_connecting">Подключаюсь к %1$s</string>
+	<string name="status_connected">Подключено к %1$s</string>
+	<string name="status_retry">Нет связи (%1$s), пробую снова</string>
+	<string name="status_outdated">Связь устарела, отсканируйте QR-код заново</string>
+	<string name="reason_unreachable">ПК не найден</string>
+</resources>

@@ -16,6 +16,7 @@ class BridgeConnection(
 	private val listener: Listener,
 ) {
 	interface Listener {
+		fun onHostFound(host: String)
 		fun onConnected()
 		fun onControl(message: JSONObject)
 		fun onUplink(packet: ByteArray)
@@ -56,7 +57,13 @@ class BridgeConnection(
 
 	/** Tries every address from the QR code, the first that answers wins. */
 	private fun reach(): Socket? {
-		for (host in pairing.hosts) {
+		connectAny(pairing.hosts)?.let { return it }
+		val discovered = Discovery.find(pairing.name).filter { it !in pairing.hosts }
+		return connectAny(discovered)?.also { listener.onHostFound(it.inetAddress.hostAddress.orEmpty()) }
+	}
+
+	private fun connectAny(hosts: List<String>): Socket? {
+		for (host in hosts) {
 			if (closed) return null
 			val s = Socket()
 			try {

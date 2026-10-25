@@ -10,7 +10,7 @@ import android.util.Log
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.TimeUnit
 
-private const val QUEUE_FRAMES = 25
+private const val QUEUE_FRAMES = 8
 
 /** Plays the PC microphone into the call by routing an AudioTrack to the telephony transmit device. */
 class UplinkPlayer(private val context: Context, private val onFailure: (String) -> Unit) {

@@ -33,7 +33,7 @@ public partial class MainWindow
 		if (scene == "pairing")
 			return;
 
-		StatusText.Text = "Connected · Pixel 9";
+		StatusText.Text = Strings.Format("ConnectedTo", "Pixel 9");
 		StatusDot.Fill = (System.Windows.Media.Brush)FindResource("Green");
 		QrCard.Visibility = Visibility.Collapsed;
 		DialButton.IsEnabled = true;

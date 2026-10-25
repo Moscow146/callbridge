@@ -59,7 +59,7 @@ class BridgeService : Service(), BridgeConnection.Listener {
 			stopping = true
 			disconnect()
 			BridgeState.running = false
-			BridgeState.update("Disconnected")
+			BridgeState.update(getString(R.string.status_disconnected))
 			stopForeground(STOP_FOREGROUND_REMOVE)
 			stopSelf()
 			return START_NOT_STICKY
@@ -75,7 +75,7 @@ class BridgeService : Service(), BridgeConnection.Listener {
 		val notification = Notification.Builder(this, CHANNEL_ID)
 			.setSmallIcon(R.drawable.ic_notification)
 			.setContentTitle(getString(R.string.app_name))
-			.setContentText("Bridge to ${current.name}")
+			.setContentText(getString(R.string.notification_text, current.name))
 			.setOngoing(true)
 			.build()
 		startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE)
@@ -86,7 +86,7 @@ class BridgeService : Service(), BridgeConnection.Listener {
 	private fun connect() {
 		val current = pairing ?: return
 		disconnect()
-		BridgeState.update("Connecting to ${current.name}")
+		BridgeState.update(getString(R.string.status_connecting, current.name))
 		connection = BridgeConnection(current, Build.MODEL, this).also { it.start() }
 	}
 
@@ -96,8 +96,15 @@ class BridgeService : Service(), BridgeConnection.Listener {
 		connection = null
 	}
 
+	override fun onHostFound(host: String) {
+		val current = pairing ?: return
+		val updated = current.copy(hosts = (listOf(host) + current.hosts.filter { it != host }).take(6))
+		PairingStore(this).save(updated)
+		pairing = updated
+	}
+
 	override fun onConnected() {
-		BridgeState.update("Connected to ${pairing?.name}")
+		BridgeState.update(getString(R.string.status_connected, pairing?.name), connected = true)
 		main.post {
 			sendState(lastCall, lastNumber)
 			if (lastCall == "active") startCapture()
@@ -114,12 +121,12 @@ class BridgeService : Service(), BridgeConnection.Listener {
 			if (stopping) return@post
 			if (reason == "wrong code") {
 				BridgeState.running = false
-				BridgeState.update("Pairing is outdated, scan the QR code again")
+				BridgeState.update(getString(R.string.status_outdated))
 				stopForeground(STOP_FOREGROUND_REMOVE)
 				stopSelf()
 				return@post
 			}
-			BridgeState.update("Disconnected ($reason), retrying")
+			BridgeState.update(getString(R.string.status_retry, if (reason == "PC not reachable") getString(R.string.reason_unreachable) else reason))
 			main.postDelayed({ if (!stopping) connect() }, RECONNECT_DELAY_MS)
 		}
 	}

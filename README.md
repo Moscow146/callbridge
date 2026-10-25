@@ -41,8 +41,9 @@ Download from the [releases page](https://github.com/Moscow146/callbridge/releas
 
 1. Start `CallBridge.exe`. It shows a QR code and lives in the tray when the window is closed.
 2. Open CallBridge on the phone, tap Scan QR code and point the camera at the QR. The pairing is remembered, next time just tap Connect.
-3. Over USB instead of Wi-Fi: `adb reverse tcp:47800 tcp:47800`. The QR already contains `127.0.0.1`.
-4. Call the phone, the PC shows the caller and Answer / Reject buttons.
+3. Over Wi-Fi the PC must accept connections: run `.scriptsllow-firewall.ps1` once (it asks for administrator rights and opens TCP 47800 and UDP 47801 on private networks). If the PC address changes, the phone finds the PC again by itself.
+4. Over USB instead of Wi-Fi: `adb reverse tcp:47800 tcp:47800`. The QR already contains `127.0.0.1`.
+5. Call the phone, the PC shows the caller and Answer / Reject buttons.
 
 ## Build
 

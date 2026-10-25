@@ -13,8 +13,8 @@ public sealed class TrayIcon : IDisposable
 	{
 		var stream = Application.GetResourceStream(new Uri("pack://application:,,,/Assets/app.ico")).Stream;
 		var menu = new Forms.ContextMenuStrip();
-		menu.Items.Add("Open CallBridge", null, (_, _) => open());
-		menu.Items.Add("Quit", null, (_, _) => quit());
+		menu.Items.Add(Strings.Get("TrayOpen"), null, (_, _) => open());
+		menu.Items.Add(Strings.Get("TrayQuit"), null, (_, _) => quit());
 		icon = new Forms.NotifyIcon
 		{
 			Icon = new Drawing.Icon(stream),

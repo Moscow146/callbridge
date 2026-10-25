@@ -25,6 +25,7 @@ public partial class MainWindow : Window
 	Contact? picked;
 	PhoneSession? session;
 	TrayIcon? tray;
+	DiscoveryResponder? discovery;
 	bool loading = true;
 	bool quitting;
 
@@ -65,8 +66,17 @@ public partial class MainWindow : Window
 		}
 		catch (SocketException e)
 		{
-			MessageBox.Show($"Port {server.Port} is busy: {e.Message}", "CallBridge", MessageBoxButton.OK, MessageBoxImage.Error);
+			MessageBox.Show(Strings.Format("PortBusy", server.Port, e.Message), "CallBridge", MessageBoxButton.OK, MessageBoxImage.Error);
 			return;
+		}
+
+		try
+		{
+			discovery = new DiscoveryResponder(Environment.MachineName, server.Port);
+			discovery.Start();
+		}
+		catch (SocketException)
+		{
 		}
 
 		tray = new TrayIcon(ShowFromTray, Quit);
@@ -76,6 +86,7 @@ public partial class MainWindow : Window
 		Closed += (_, _) =>
 		{
 			tray?.Dispose();
+			discovery?.Dispose();
 			server.Dispose();
 		};
 		Ready = true;
@@ -103,7 +114,7 @@ public partial class MainWindow : Window
 			return;
 		e.Cancel = true;
 		Hide();
-		tray?.Notify("CallBridge", "Still running in the tray, calls will be shown here");
+		tray?.Notify("CallBridge", Strings.Get("TrayStillRunning"));
 	}
 
 	[DllImport("dwmapi.dll")]
@@ -153,8 +164,8 @@ public partial class MainWindow : Window
 		session = s;
 		s.StateChanged += state => Dispatcher.Invoke(() => ShowState(state));
 		s.ContactsChanged += list => Dispatcher.Invoke(() => contacts = list);
-		s.AudioRouteChanged += reason => Dispatcher.Invoke(() => ShowRoute(reason == null ? null : $"Call audio unavailable: {reason}"));
-		StatusText.Text = $"Connected · {s.DeviceName}";
+		s.AudioRouteChanged += reason => Dispatcher.Invoke(() => ShowRoute(reason == null ? null : Strings.Format("AudioUnavailable", reason)));
+		StatusText.Text = Strings.Format("ConnectedTo", s.DeviceName);
 		StatusDot.Fill = (Brush)FindResource("Green");
 		QrCard.Visibility = Visibility.Collapsed;
 		DialButton.IsEnabled = true;
@@ -167,7 +178,7 @@ public partial class MainWindow : Window
 	void OnPhoneDisconnected()
 	{
 		session = null;
-		StatusText.Text = "Waiting for phone";
+		StatusText.Text = Strings.Get("WaitingPhone");
 		StatusDot.Fill = (Brush)FindResource("Amber");
 		QrCard.Visibility = Visibility.Visible;
 		DialButton.IsEnabled = false;
@@ -189,26 +200,26 @@ public partial class MainWindow : Window
 		}
 		catch (Exception e) when (e is System.Runtime.InteropServices.COMException or InvalidOperationException)
 		{
-			ShowRoute($"Audio device error: {e.Message}");
+			ShowRoute(Strings.Format("AudioDeviceError", e.Message));
 		}
 	}
 
 	void ShowState(PhoneState state)
 	{
-		var who = state.Name ?? state.Number ?? "Unknown number";
+		var who = state.Name ?? state.Number ?? Strings.Get("UnknownNumber");
 		var idle = state.Call == CallState.Idle;
-		CallTitle.Text = idle ? "No call" : who;
+		CallTitle.Text = idle ? Strings.Get("NoCall") : who;
 		CallSub.Text = state.Call switch
 		{
-			CallState.Ringing => "Incoming call",
-			CallState.Dialing => "Calling…",
-			CallState.Active => "In call",
-			CallState.Held => "On hold",
-			_ => "Waiting for a call",
+			CallState.Ringing => Strings.Get("IncomingCall"),
+			CallState.Dialing => Strings.Get("Calling"),
+			CallState.Active => Strings.Get("InCall"),
+			CallState.Held => Strings.Get("OnHold"),
+			_ => Strings.Get("WaitingCall"),
 		};
 		var ringing = state.Call == CallState.Ringing;
 		if (ringing && (!IsVisible || !IsActive))
-			tray?.Notify("Incoming call", who);
+			tray?.Notify(Strings.Get("IncomingCall"), who);
 		AnswerButton.Visibility = ringing ? Visibility.Visible : Visibility.Collapsed;
 		RejectButton.Visibility = ringing ? Visibility.Visible : Visibility.Collapsed;
 		HangupButton.Visibility = state.Call is CallState.Active or CallState.Dialing or CallState.Held ? Visibility.Visible : Visibility.Collapsed;
@@ -272,7 +283,7 @@ public partial class MainWindow : Window
 		var number = ResolveNumber(text);
 		if (number == null)
 		{
-			ShowDialHint("No such contact. Type a number or pick a contact from the list");
+			ShowDialHint(Strings.Get("NoSuchContact"));
 			return;
 		}
 		SuggestionPopup.IsOpen = false;

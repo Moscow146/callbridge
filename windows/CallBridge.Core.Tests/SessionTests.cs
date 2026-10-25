@@ -51,6 +51,18 @@ public class SessionTests
 	}
 
 	[Fact]
+	public async Task AnswersDiscoveryQuery()
+	{
+		using var responder = new DiscoveryResponder("MY-PC", 47800, 47821);
+		responder.Start();
+		using var client = new UdpClient();
+		var query = System.Text.Encoding.UTF8.GetBytes(DiscoveryResponder.Query);
+		await client.SendAsync(query, new IPEndPoint(IPAddress.Loopback, 47821));
+		var answer = await client.ReceiveAsync().WaitAsync(TimeSpan.FromSeconds(5));
+		Assert.Equal("CALLBRIDGE 47800 MY-PC", System.Text.Encoding.UTF8.GetString(answer.Buffer));
+	}
+
+	[Fact]
 	public async Task RejectsWrongCode()
 	{
 		using var server = new CallBridgeServer("0123456789abcdef", 47812);

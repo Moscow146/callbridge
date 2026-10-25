@@ -7,6 +7,8 @@ namespace CallBridge.Core.Audio;
 /// <summary>Plays 48 kHz mono PCM frames to a chosen output device.</summary>
 public sealed class SpeakerPlayer : IDisposable
 {
+	static readonly TimeSpan MaxLatency = TimeSpan.FromMilliseconds(160);
+
 	readonly BufferedWaveProvider buffer;
 	readonly VolumeSampleProvider volume;
 	readonly WasapiOut output;
@@ -35,6 +37,8 @@ public sealed class SpeakerPlayer : IDisposable
 
 	public void Enqueue(short[] pcm)
 	{
+		if (buffer.BufferedDuration > MaxLatency)
+			buffer.ClearBuffer();
 		var bytes = new byte[pcm.Length * 2];
 		Buffer.BlockCopy(pcm, 0, bytes, 0, bytes.Length);
 		buffer.AddSamples(bytes, 0, bytes.Length);

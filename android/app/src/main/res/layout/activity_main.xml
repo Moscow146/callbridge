@@ -68,7 +68,7 @@
 				android:fontFamily="sans-serif-medium"
 				android:paddingHorizontal="14dp"
 				android:paddingVertical="8dp"
-				android:text="Offline"
+				android:text="@string/pill_offline"
 				android:textColor="#F5F7FF"
 				android:textSize="12sp" />
 		</FrameLayout>

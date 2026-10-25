@@ -35,13 +35,15 @@ class MainActivity : Activity() {
 	private val store by lazy { PairingStore(this) }
 	private lateinit var pill: TextView
 	private val observer: (String) -> Unit = { text ->
-		status.text = text
+		status.text = text.ifEmpty { getString(R.string.status_disconnected) }
 		renderToggle()
-		pill.text = when {
-			text.startsWith("Connected") -> "● Connected"
-			BridgeState.running -> "● Connecting"
-			else -> "Offline"
-		}
+		pill.setText(
+			when {
+				BridgeState.connected -> R.string.pill_connected
+				BridgeState.running -> R.string.pill_connecting
+				else -> R.string.pill_offline
+			}
+		)
 	}
 
 	override fun onCreate(savedInstanceState: Bundle?) {
@@ -127,7 +129,7 @@ class MainActivity : Activity() {
 
 	private fun refresh() {
 		val pairing = store.load()
-		pcName.text = pairing?.let { "Paired with ${it.name}" } ?: "Not paired yet"
+		pcName.text = pairing?.let { getString(R.string.paired_with, it.name) } ?: getString(R.string.not_paired)
 		toggle.visibility = if (pairing == null) View.GONE else View.VISIBLE
 		scan.setText(if (pairing == null) R.string.scan_qr else R.string.pair_other)
 	}

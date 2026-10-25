@@ -5,4 +5,16 @@
 	<string name="connect">Connect</string>
 	<string name="disconnect">Disconnect</string>
 	<string name="notification_channel">Bridge connection</string>
+	<string name="notification_text">Bridge to %1$s</string>
+	<string name="paired_with">Paired with %1$s</string>
+	<string name="not_paired">Not paired yet</string>
+	<string name="pill_connected">● Connected</string>
+	<string name="pill_connecting">● Connecting</string>
+	<string name="pill_offline">Offline</string>
+	<string name="status_disconnected">Disconnected</string>
+	<string name="status_connecting">Connecting to %1$s</string>
+	<string name="status_connected">Connected to %1$s</string>
+	<string name="status_retry">Disconnected (%1$s), retrying</string>
+	<string name="status_outdated">Pairing is outdated, scan the QR code again</string>
+	<string name="reason_unreachable">PC not reachable</string>
 </resources>
