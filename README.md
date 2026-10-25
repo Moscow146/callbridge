@@ -35,7 +35,7 @@ The phone stays in your pocket. Its cellular call audio is streamed to the PC, s
 Download from the [releases page](https://github.com/Moscow146/callbridge/releases) (or the artifacts of a [workflow run](https://github.com/Moscow146/callbridge/actions)):
 
 - `CallBridge.exe`: the Windows app, a single self-contained file.
-- `callbridge-magisk.zip`: flash it in the Magisk app and reboot. It installs CallBridge into `/system/priv-app`, grants `CAPTURE_AUDIO_OUTPUT` and the runtime permissions.
+- `callbridge-magisk.zip`: flash it in the Magisk app and reboot. It installs CallBridge into `/system/priv-app`, grants `CAPTURE_AUDIO_OUTPUT`, `CONNECTIVITY_USE_RESTRICTED_NETWORKS` (so the bridge keeps working while a VPN is on) and the runtime permissions.
 
 ## Use
 
