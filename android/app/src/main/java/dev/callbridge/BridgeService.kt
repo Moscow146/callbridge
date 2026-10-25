@@ -26,8 +26,7 @@ class BridgeService : Service(), BridgeConnection.Listener {
 	private lateinit var calls: CallController
 	private var connection: BridgeConnection? = null
 	private var capture: DownlinkCapture? = null
-	private var host = ""
-	private var code = ""
+	private var pairing: Pairing? = null
 	private var lastNumber: String? = null
 	private var lastCall = "idle"
 	private var stopping = false
@@ -61,30 +60,30 @@ class BridgeService : Service(), BridgeConnection.Listener {
 			stopSelf()
 			return START_NOT_STICKY
 		}
-		host = intent?.getStringExtra(EXTRA_HOST).orEmpty()
-		code = intent?.getStringExtra(EXTRA_CODE).orEmpty()
+		pairing = PairingStore(this).load()
+		val current = pairing
+		if (current == null) {
+			stopSelf()
+			return START_NOT_STICKY
+		}
 		stopping = false
 		BridgeState.running = true
 		val notification = Notification.Builder(this, CHANNEL_ID)
 			.setSmallIcon(R.drawable.ic_launcher)
 			.setContentTitle(getString(R.string.app_name))
-			.setContentText("Bridge to $host")
+			.setContentText("Bridge to ${current.name}")
 			.setOngoing(true)
 			.build()
-		startForeground(
-			NOTIFICATION_ID, notification,
-			ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE or ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE
-		)
+		startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE)
 		connect()
 		return START_REDELIVER_INTENT
 	}
 
 	private fun connect() {
+		val current = pairing ?: return
 		disconnect()
-		BridgeState.update("Connecting to $host")
-		val target = host.substringBefore(':')
-		val port = host.substringAfter(':', DEFAULT_PORT.toString()).toIntOrNull() ?: DEFAULT_PORT
-		connection = BridgeConnection(target, port, code, Build.MODEL, this).also { it.start() }
+		BridgeState.update("Connecting to ${current.name}")
+		connection = BridgeConnection(current, Build.MODEL, this).also { it.start() }
 	}
 
 	private fun disconnect() {
@@ -95,7 +94,7 @@ class BridgeService : Service(), BridgeConnection.Listener {
 	}
 
 	override fun onConnected() {
-		BridgeState.update("Connected to $host")
+		BridgeState.update("Connected to ${pairing?.name}")
 		main.post {
 			sendState(lastCall, lastNumber)
 			if (lastCall == "active") startCapture()
@@ -109,7 +108,7 @@ class BridgeService : Service(), BridgeConnection.Listener {
 			if (stopping) return@post
 			if (reason == "wrong code") {
 				BridgeState.running = false
-				BridgeState.update("Wrong pairing code")
+				BridgeState.update("Pairing is outdated, scan the QR code again")
 				stopForeground(STOP_FOREGROUND_REMOVE)
 				stopSelf()
 				return@post
@@ -174,7 +173,5 @@ class BridgeService : Service(), BridgeConnection.Listener {
 
 	companion object {
 		const val ACTION_STOP = "dev.callbridge.STOP"
-		const val EXTRA_HOST = "host"
-		const val EXTRA_CODE = "code"
 	}
 }

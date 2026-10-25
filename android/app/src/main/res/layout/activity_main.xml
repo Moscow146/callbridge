@@ -12,23 +12,12 @@
 		android:textSize="28sp"
 		android:textStyle="bold" />
 
-	<EditText
-		android:id="@+id/host"
+	<TextView
+		android:id="@+id/pc_name"
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
 		android:layout_marginTop="24dp"
-		android:hint="@string/host_hint"
-		android:inputType="textUri"
-		android:singleLine="true" />
-
-	<EditText
-		android:id="@+id/code"
-		android:layout_width="match_parent"
-		android:layout_height="wrap_content"
-		android:layout_marginTop="8dp"
-		android:hint="@string/code_hint"
-		android:inputType="number"
-		android:maxLength="6" />
+		android:textSize="18sp" />
 
 	<Button
 		android:id="@+id/toggle"
@@ -36,6 +25,13 @@
 		android:layout_height="wrap_content"
 		android:layout_marginTop="16dp"
 		android:text="@string/connect" />
+
+	<Button
+		android:id="@+id/scan"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_marginTop="8dp"
+		android:text="@string/scan_qr" />
 
 	<TextView
 		android:id="@+id/status"

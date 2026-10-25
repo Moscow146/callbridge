@@ -41,8 +41,8 @@ The result is `build\callbridge-magisk.zip`. Flash it in the Magisk app and rebo
 
 ## Use
 
-1. Start the Windows app. It shows a 6-digit pairing code and the PC address.
-2. Open CallBridge on the phone, enter the PC address and the code, tap Connect.
-3. Over USB instead of Wi-Fi: `adb reverse tcp:47800 tcp:47800` and use `127.0.0.1` as the address.
+1. Start the Windows app. It shows a QR code.
+2. Open CallBridge on the phone, tap Scan QR code and point the camera at the QR. The pairing is remembered, next time just tap Connect.
+3. Over USB instead of Wi-Fi: `adb reverse tcp:47800 tcp:47800`. The QR already contains `127.0.0.1`.
 
 Protocol: [docs/PROTOCOL.md](docs/PROTOCOL.md).

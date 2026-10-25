@@ -5,11 +5,11 @@ import java.io.IOException
 import java.net.InetSocketAddress
 import java.net.Socket
 
+private const val CONNECT_TIMEOUT_MS = 1500
+
 /** Connects to the PC, performs the handshake and dispatches incoming frames. */
 class BridgeConnection(
-	private val host: String,
-	private val port: Int,
-	private val code: String,
+	private val pairing: Pairing,
 	private val deviceName: String,
 	private val listener: Listener,
 ) {
@@ -46,15 +46,29 @@ class BridgeConnection(
 		}
 	}
 
+	/** Tries every address from the QR code, the first that answers wins. */
+	private fun reach(): Socket? {
+		for (host in pairing.hosts) {
+			if (closed) return null
+			val s = Socket()
+			try {
+				s.tcpNoDelay = true
+				s.connect(InetSocketAddress(host, pairing.port), CONNECT_TIMEOUT_MS)
+				return s
+			} catch (e: IOException) {
+				runCatching { s.close() }
+			}
+		}
+		return null
+	}
+
 	private fun run() {
 		var reason = "closed"
 		try {
-			val s = Socket()
+			val s = reach() ?: throw IOException("PC not reachable")
 			socket = s
-			s.tcpNoDelay = true
-			s.connect(InetSocketAddress(host, port), 5000)
 			val stream = FrameStream(s.getInputStream(), s.getOutputStream())
-			val hello = JSONObject().put("version", PROTOCOL_VERSION).put("device", deviceName).put("token", code)
+			val hello = JSONObject().put("version", PROTOCOL_VERSION).put("device", deviceName).put("token", pairing.code)
 			stream.write(FrameType.HELLO, hello.toString().toByteArray())
 			val ack = stream.read()
 			if (ack == null || ack.type != FrameType.HELLO_ACK) throw IOException("No handshake reply")

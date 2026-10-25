@@ -1,20 +1,20 @@
-﻿using System.Net;
-using System.Net.NetworkInformation;
-using System.Net.Sockets;
+﻿using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using CallBridge.Core.Audio;
 using CallBridge.Core.Protocol;
 using CallBridge.Core.Session;
+using QRCoder;
 
 namespace CallBridge.App;
 
 public partial class MainWindow : Window
 {
 	readonly AppSettings settings = AppSettings.Load();
-	readonly CallBridgeServer server = new();
+	readonly CallBridgeServer server;
 	readonly DispatcherTimer levelTimer = new() { Interval = TimeSpan.FromMilliseconds(50) };
 	PhoneSession? session;
 	bool loading = true;
@@ -22,8 +22,13 @@ public partial class MainWindow : Window
 	public MainWindow()
 	{
 		InitializeComponent();
-		CodeText.Text = server.PairingCode;
-		AddressText.Text = DescribeAddresses();
+		if (settings.PairingCode == null)
+		{
+			settings.PairingCode = CallBridgeServer.GenerateCode();
+			settings.Save();
+		}
+		server = new CallBridgeServer(settings.PairingCode);
+		ShowQr();
 		FillDevices(MicCombo, AudioDevices.Capture(), settings.MicId);
 		FillDevices(SpeakerCombo, AudioDevices.Render(), settings.SpeakerId);
 		VolumeSlider.Value = settings.Volume;
@@ -38,14 +43,27 @@ public partial class MainWindow : Window
 		Closed += (_, _) => server.Dispose();
 	}
 
-	string DescribeAddresses()
+	void ShowQr()
 	{
-		var addresses = NetworkInterface.GetAllNetworkInterfaces()
-			.Where(n => n.OperationalStatus == OperationalStatus.Up && n.NetworkInterfaceType != NetworkInterfaceType.Loopback)
-			.SelectMany(n => n.GetIPProperties().UnicastAddresses)
-			.Where(a => a.Address.AddressFamily == AddressFamily.InterNetwork)
-			.Select(a => a.Address.ToString());
-		return $"Port {server.Port}. Address: {string.Join(", ", addresses)}. Over USB: adb reverse tcp:{server.Port} tcp:{server.Port}";
+		var hosts = new[] { "127.0.0.1" }.Concat(PairingInfo.LocalAddresses());
+		var uri = PairingInfo.BuildUri(settings.PairingCode!, CallBridgeServer.DefaultPort, hosts, Environment.MachineName);
+		using var generator = new QRCodeGenerator();
+		var png = new PngByteQRCode(generator.CreateQrCode(uri, QRCodeGenerator.ECCLevel.M)).GetGraphic(10);
+		var image = new BitmapImage();
+		image.BeginInit();
+		image.CacheOption = BitmapCacheOption.OnLoad;
+		image.StreamSource = new MemoryStream(png);
+		image.EndInit();
+		QrImage.Source = image;
+	}
+
+	void OnNewCode(object sender, RoutedEventArgs e)
+	{
+		settings.PairingCode = CallBridgeServer.GenerateCode();
+		settings.Save();
+		server.PairingCode = settings.PairingCode;
+		session?.Dispose();
+		ShowQr();
 	}
 
 	static void FillDevices(ComboBox combo, IReadOnlyList<AudioDeviceInfo> devices, string? selectedId)

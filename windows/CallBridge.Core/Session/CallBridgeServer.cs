@@ -12,7 +12,7 @@ public sealed class CallBridgeServer : IDisposable
 	readonly TcpListener listener;
 	readonly CancellationTokenSource cts = new();
 
-	public string PairingCode { get; } = RandomNumberGenerator.GetInt32(0, 1_000_000).ToString("D6");
+	public string PairingCode { get; set; }
 
 	public int Port { get; }
 
@@ -22,11 +22,14 @@ public sealed class CallBridgeServer : IDisposable
 
 	public event Action? PhoneDisconnected;
 
-	public CallBridgeServer(int port = DefaultPort)
+	public CallBridgeServer(string pairingCode, int port = DefaultPort)
 	{
+		PairingCode = pairingCode;
 		listener = new TcpListener(IPAddress.Any, port);
 		Port = port;
 	}
+
+	public static string GenerateCode() => Convert.ToHexString(RandomNumberGenerator.GetBytes(8)).ToLowerInvariant();
 
 	public void Start()
 	{

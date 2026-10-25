@@ -1,7 +1,7 @@
 <resources>
 	<string name="app_name">CallBridge</string>
-	<string name="host_hint">PC address (192.168.x.x or 127.0.0.1 over USB)</string>
-	<string name="code_hint">Pairing code from the PC app</string>
+	<string name="scan_qr">Scan QR code</string>
+	<string name="pair_other">Pair another PC</string>
 	<string name="connect">Connect</string>
 	<string name="disconnect">Disconnect</string>
 	<string name="notification_channel">Bridge connection</string>

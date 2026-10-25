@@ -8,6 +8,8 @@ public sealed class AppSettings
 	static readonly string Path = System.IO.Path.Combine(
 		Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "CallBridge", "settings.json");
 
+	public string? PairingCode { get; set; }
+
 	public string? MicId { get; set; }
 
 	public string? SpeakerId { get; set; }

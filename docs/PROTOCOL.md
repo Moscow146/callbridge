@@ -48,4 +48,10 @@ PC→phone:
 
 ## Pairing
 
-The PC shows a 6-digit pairing code. The phone sends it in `Hello.token`. A wrong token gets `HelloAck.ok=false` and the connection is closed. The code is regenerated on every start of the PC app.
+The PC shows a QR code with the URI
+
+```
+callbridge://pair?h=127.0.0.1,192.168.1.5&p=47800&c=<16 hex chars>&n=<PC name>
+```
+
+`h` is a comma-separated list of PC addresses, the phone tries them in order (1.5 s each). `c` is the pairing token, the phone sends it in `Hello.token`. A wrong token gets `HelloAck.ok=false, error="wrong code"` and the connection is closed. The token is stored on the PC and survives restarts until the user presses "New code".

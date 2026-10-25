@@ -34,10 +34,10 @@
 		<StackPanel Margin="16">
 			<Border Style="{StaticResource Card}">
 				<StackPanel>
-					<TextBlock Style="{StaticResource Caption}" Text="Pairing code"/>
-					<TextBlock x:Name="CodeText" FontSize="34" FontWeight="SemiBold" FontFamily="Consolas"/>
-					<TextBlock x:Name="AddressText" Foreground="#374151" Margin="0,4,0,0" TextWrapping="Wrap"/>
+					<TextBlock Style="{StaticResource Caption}" Text="Scan with the CallBridge app on your phone"/>
+					<Image x:Name="QrImage" Width="200" Height="200" HorizontalAlignment="Left" RenderOptions.BitmapScalingMode="NearestNeighbor"/>
 					<TextBlock x:Name="PhoneText" Margin="0,8,0,0" Foreground="#B45309" Text="Phone not connected"/>
+					<Button Content="New code" Margin="0,8,0,0" HorizontalAlignment="Left" Click="OnNewCode"/>
 				</StackPanel>
 			</Border>
 

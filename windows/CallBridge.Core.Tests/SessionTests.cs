@@ -20,7 +20,7 @@ public class SessionTests
 	[Fact]
 	public async Task AcceptsCorrectCode()
 	{
-		using var server = new CallBridgeServer(47811);
+		using var server = new CallBridgeServer("0123456789abcdef", 47811);
 		server.Start();
 		var connected = new TaskCompletionSource();
 		server.PhoneConnected += _ => connected.TrySetResult();
@@ -32,7 +32,7 @@ public class SessionTests
 	[Fact]
 	public async Task RejectsWrongCode()
 	{
-		using var server = new CallBridgeServer(47812);
+		using var server = new CallBridgeServer("0123456789abcdef", 47812);
 		server.Start();
 		var ack = await Connect(server, "not-the-code");
 		Assert.False(ack!.Ok);
