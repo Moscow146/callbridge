@@ -1,0 +1,16 @@
+<resources>
+	<color name="bg_grouped">#F2F2F7</color>
+	<color name="surface">#FFFFFF</color>
+	<color name="control_fill">#FFFFFF</color>
+	<color name="label">#000000</color>
+	<color name="label_secondary">#5C5C63</color>
+	<color name="separator">#D1D1D6</color>
+	<color name="accent">#1E6EF4</color>
+	<color name="accent_text">#1E6EF4</color>
+	<color name="on_fill">#FFFFFF</color>
+	<color name="green">#008932</color>
+	<color name="orange">#C55300</color>
+	<color name="gray">#6C6C72</color>
+	<color name="red_text">#E9152D</color>
+	<color name="ripple">#1F000000</color>
+</resources>

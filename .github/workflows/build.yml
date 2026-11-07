@@ -6,6 +6,9 @@ on:
     tags: ['v*']
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   windows:
     runs-on: windows-latest
@@ -31,6 +34,17 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
+      - name: Restore the signing key
+        env:
+          KEYSTORE_B64: ${{ secrets.CALLBRIDGE_KEYSTORE_B64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.CALLBRIDGE_KEYSTORE_PASSWORD }}
+        run: |
+          if ($env:KEYSTORE_B64) {
+            $path = Join-Path $env:RUNNER_TEMP 'callbridge-release.p12'
+            [IO.File]::WriteAllBytes($path, [Convert]::FromBase64String($env:KEYSTORE_B64))
+            "CALLBRIDGE_KEYSTORE=$path" >> $env:GITHUB_ENV
+            "CALLBRIDGE_KEYSTORE_PASSWORD=$env:KEYSTORE_PASSWORD" >> $env:GITHUB_ENV
+          }
       - name: Build APK and Magisk module
         run: ./scripts/build-android.ps1 -Module
       - uses: actions/upload-artifact@v7

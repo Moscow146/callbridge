@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 using CallBridge.Core.Audio;
 using CallBridge.Core.Protocol;
 
@@ -26,10 +26,12 @@ public partial class MainWindow
 	{
 		Height = scene switch
 		{
-			"pairing" => 1070,
-			"call" => 800,
-			_ => 740,
+			"pairing" => 830,
+			"ringing" => 690,
+			"call" => 690,
+			_ => 660,
 		};
+		Topmost = true;
 		WindowStartupLocation = WindowStartupLocation.Manual;
 		Top = 0;
 		Left = 100;
@@ -39,8 +41,9 @@ public partial class MainWindow
 			return;
 
 		StatusText.Text = Strings.Format("ConnectedTo", "Pixel 9");
-		StatusDot.Fill = (System.Windows.Media.Brush)FindResource("Green");
+		StatusDot.SetResourceReference(System.Windows.Shapes.Shape.FillProperty, "Green");
 		QrCard.Visibility = Visibility.Collapsed;
+		CallCard.Visibility = Visibility.Visible;
 		DialButton.IsEnabled = true;
 		contacts =
 		[

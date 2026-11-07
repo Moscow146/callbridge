@@ -12,13 +12,13 @@
 <p align="center">Take phone calls on your Windows PC: pick any mic and headphones, mute, and more. Android app + Windows .exe</p>
 
 <p align="center">
-	<img src="docs/screenshots/windows-pairing.png" width="230" alt="Pairing">
-	<img src="docs/screenshots/windows-ringing.png" width="230" alt="Incoming call">
-	<img src="docs/screenshots/windows-call.png" width="230" alt="In call">
-	<img src="docs/screenshots/windows-suggest.png" width="230" alt="Contact suggestions">
+	<picture><source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/windows-pairing-dark.png"><img src="docs/screenshots/windows-pairing.png" width="230" alt="Pairing"></picture>
+	<picture><source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/windows-ringing-dark.png"><img src="docs/screenshots/windows-ringing.png" width="230" alt="Incoming call"></picture>
+	<picture><source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/windows-call-dark.png"><img src="docs/screenshots/windows-call.png" width="230" alt="In call"></picture>
+	<picture><source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/windows-suggest-dark.png"><img src="docs/screenshots/windows-suggest.png" width="230" alt="Contact suggestions"></picture>
 </p>
 
-<p align="center"><img src="docs/screenshots/android-connected.png" width="300" alt="Android app"></p>
+<p align="center"><picture><source media="(prefers-color-scheme: dark)" srcset="docs/screenshots/android-connected-dark.png"><img src="docs/screenshots/android-connected.png" width="300" alt="Android app"></picture></p>
 
 The phone stays in your pocket. Its cellular call audio is streamed to the PC, so you hear the caller in the headphones you choose and talk into the microphone you choose.
 
@@ -52,7 +52,9 @@ Download from the [releases page](https://github.com/Moscow146/callbridge/releas
 3. Over Wi-Fi the PC must accept connections: run `.\scripts\allow-firewall.ps1` once (it asks for administrator rights and opens TCP 47800 and UDP 47801 on private networks). If the PC address changes, the phone finds the PC again by itself.
 4. Over USB instead of Wi-Fi: `adb reverse tcp:47800 tcp:47800`. The QR already contains `127.0.0.1`.
 5. Call the phone, the PC shows the caller and Answer / Reject buttons.
-6. A call starts on the PC, with the phone's speaker and microphone silent. To move it, press Move to phone in the PC app, the floating button over the phone's call screen (drag it if it is in the way), or the action in the CallBridge notification. If the connection to the PC is lost, the call continues on the phone.
+6. A call starts on the PC, with the phone's speaker and microphone silent. To move it, press To phone in the PC app, the floating button over the phone's call screen (drag it if it is in the way), or the action in the CallBridge notification. If the connection to the PC is lost, the call continues on the phone.
+
+Keyboard shortcuts in the PC app: Ctrl+Enter accepts a call, Ctrl+E ends it, Ctrl+M mutes the microphone and Ctrl+D turns off the caller's sound.
 
 Keep Bluetooth headsets disconnected from the phone during calls on the PC: the HAL refuses to mute a Bluetooth headset's microphone, so it would stay live in the call.
 

@@ -1,124 +1,162 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
 	android:id="@+id/root"
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
-	android:background="@drawable/bg_main">
-
-	<FrameLayout
-		android:id="@+id/orbs"
-		android:layout_width="match_parent"
-		android:layout_height="match_parent"
-		android:clipChildren="false">
-
-		<View
-			android:id="@+id/orb_blue"
-			android:layout_width="320dp"
-			android:layout_height="320dp"
-			android:layout_marginStart="-120dp"
-			android:layout_marginTop="-60dp"
-			android:background="@drawable/orb_blue" />
-
-		<View
-			android:id="@+id/orb_pink"
-			android:layout_width="300dp"
-			android:layout_height="300dp"
-			android:layout_gravity="end|center_vertical"
-			android:layout_marginEnd="-140dp"
-			android:background="@drawable/orb_pink" />
-
-		<View
-			android:id="@+id/orb_teal"
-			android:layout_width="280dp"
-			android:layout_height="280dp"
-			android:layout_gravity="bottom"
-			android:layout_marginStart="-60dp"
-			android:layout_marginBottom="-100dp"
-			android:background="@drawable/orb_teal" />
-	</FrameLayout>
+	android:background="@color/bg_grouped"
+	android:fillViewport="true">
 
 	<LinearLayout
 		android:id="@+id/content"
 		android:layout_width="match_parent"
-		android:layout_height="match_parent"
+		android:layout_height="wrap_content"
+		android:gravity="center_horizontal"
 		android:orientation="vertical"
-		android:padding="22dp">
+		android:paddingHorizontal="20dp">
 
 		<FrameLayout
-			android:layout_width="match_parent"
-			android:layout_height="wrap_content"
-			android:layout_marginTop="12dp"
-			android:layout_marginBottom="22dp">
+			android:id="@+id/status_badge"
+			android:layout_width="72dp"
+			android:layout_height="72dp"
+			android:layout_marginTop="56dp"
+			android:background="@drawable/bg_circle">
 
-			<TextView
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:layout_gravity="center_vertical"
-				android:fontFamily="sans-serif-medium"
-				android:text="@string/app_name"
-				android:textColor="#F5F7FF"
-				android:textSize="32sp" />
-
-			<TextView
-				android:id="@+id/pill"
-				android:layout_width="wrap_content"
-				android:layout_height="wrap_content"
-				android:layout_gravity="end|center_vertical"
-				android:background="@drawable/pill_status"
-				android:fontFamily="sans-serif-medium"
-				android:paddingHorizontal="14dp"
-				android:paddingVertical="8dp"
-				android:text="@string/pill_offline"
-				android:textColor="#F5F7FF"
-				android:textSize="12sp" />
+			<ImageView
+				android:id="@+id/status_icon"
+				android:layout_width="40dp"
+				android:layout_height="40dp"
+				android:layout_gravity="center"
+				android:importantForAccessibility="no"
+				android:tint="@color/on_fill" />
 		</FrameLayout>
 
-		<dev.callbridge.GlassLayout
+		<TextView
+			android:id="@+id/title"
+			style="@style/Text.Title"
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
-			android:padding="24dp">
+			android:layout_marginTop="16dp"
+			android:accessibilityHeading="true"
+			android:accessibilityLiveRegion="polite"
+			android:gravity="center" />
 
-			<TextView
-				android:id="@+id/pc_name"
-				android:layout_width="match_parent"
-				android:layout_height="wrap_content"
-				android:fontFamily="sans-serif-medium"
-				android:textColor="#F5F7FF"
-				android:textSize="24sp" />
+		<TextView
+			android:id="@+id/detail"
+			style="@style/Text.Subhead"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:layout_marginTop="4dp"
+			android:gravity="center" />
 
-			<TextView
-				android:id="@+id/status"
-				android:layout_width="match_parent"
-				android:layout_height="wrap_content"
-				android:layout_marginTop="4dp"
-				android:textColor="#B8F5F7FF"
-				android:textSize="14sp" />
+		<Button
+			android:id="@+id/primary"
+			style="@style/Button.Capsule"
+			android:layout_marginTop="28dp" />
 
-			<Button
-				android:id="@+id/toggle"
-				android:layout_width="match_parent"
-				android:layout_height="56dp"
-				android:layout_marginTop="24dp"
-				android:background="@drawable/btn_green"
-				android:fontFamily="sans-serif-medium"
-				android:stateListAnimator="@null"
-				android:text="@string/connect"
-				android:textAllCaps="false"
-				android:textColor="#FFFFFF"
-				android:textSize="16sp" />
+		<TextView
+			android:id="@+id/access_header"
+			style="@style/Text.Footnote"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:layout_marginTop="32dp"
+			android:layout_marginBottom="6dp"
+			android:accessibilityHeading="true"
+			android:paddingHorizontal="16dp"
+			android:text="@string/access_header" />
 
-			<Button
-				android:id="@+id/scan"
+		<LinearLayout
+			android:id="@+id/access_section"
+			style="@style/Section">
+
+			<LinearLayout
+				android:id="@+id/access_phone"
+				style="@style/Row">
+
+				<LinearLayout
+					android:layout_width="0dp"
+					android:layout_height="wrap_content"
+					android:layout_weight="1"
+					android:orientation="vertical">
+
+					<TextView
+						style="@style/Text.Body"
+						android:layout_width="match_parent"
+						android:layout_height="wrap_content"
+						android:text="@string/access_phone" />
+
+					<TextView
+						style="@style/Text.Footnote"
+						android:layout_width="match_parent"
+						android:layout_height="wrap_content"
+						android:layout_marginTop="2dp"
+						android:text="@string/access_phone_detail" />
+				</LinearLayout>
+
+				<ImageView style="@style/Chevron" />
+			</LinearLayout>
+
+			<View
+				android:id="@+id/access_divider"
 				android:layout_width="match_parent"
-				android:layout_height="56dp"
-				android:layout_marginTop="12dp"
-				android:background="@drawable/btn_glass"
-				android:fontFamily="sans-serif-medium"
-				android:stateListAnimator="@null"
-				android:text="@string/scan_qr"
-				android:textAllCaps="false"
-				android:textColor="#F5F7FF"
-				android:textSize="16sp" />
-		</dev.callbridge.GlassLayout>
+				android:layout_height="1px"
+				android:layout_marginStart="16dp"
+				android:background="@color/separator" />
+
+			<LinearLayout
+				android:id="@+id/access_overlay"
+				style="@style/Row">
+
+				<LinearLayout
+					android:layout_width="0dp"
+					android:layout_height="wrap_content"
+					android:layout_weight="1"
+					android:orientation="vertical">
+
+					<TextView
+						style="@style/Text.Body"
+						android:layout_width="match_parent"
+						android:layout_height="wrap_content"
+						android:text="@string/access_overlay" />
+
+					<TextView
+						style="@style/Text.Footnote"
+						android:layout_width="match_parent"
+						android:layout_height="wrap_content"
+						android:layout_marginTop="2dp"
+						android:text="@string/access_overlay_detail" />
+				</LinearLayout>
+
+				<ImageView style="@style/Chevron" />
+			</LinearLayout>
+		</LinearLayout>
+
+		<LinearLayout
+			android:id="@+id/pair_section"
+			style="@style/Section"
+			android:layout_marginTop="32dp">
+
+			<LinearLayout
+				android:id="@+id/pair_other"
+				style="@style/Row">
+
+				<TextView
+					style="@style/Text.Body"
+					android:layout_width="0dp"
+					android:layout_height="wrap_content"
+					android:layout_weight="1"
+					android:text="@string/pair_other" />
+
+				<ImageView style="@style/Chevron" />
+			</LinearLayout>
+		</LinearLayout>
+
+		<TextView
+			android:id="@+id/footer"
+			style="@style/Text.Footnote"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:layout_marginTop="8dp"
+			android:paddingHorizontal="16dp"
+			android:text="@string/footer_modes" />
 	</LinearLayout>
-</FrameLayout>
+</ScrollView>

@@ -33,6 +33,8 @@ class CallModeOverlay(private val context: Context, private val onToggle: () -> 
 			pill = it
 		}
 		view.setText(if (mode == CallMode.PC) R.string.mode_on_pc else R.string.mode_on_phone)
+		val action = context.getString(if (mode == CallMode.PC) R.string.mode_move_to_phone else R.string.mode_move_to_pc)
+		view.contentDescription = "${view.text}. $action"
 	}
 
 	fun hide() {
@@ -44,11 +46,14 @@ class CallModeOverlay(private val context: Context, private val onToggle: () -> 
 	private fun create(): TextView {
 		val view = TextView(context).apply {
 			setBackgroundResource(R.drawable.pill_overlay)
-			setTextColor(0xFFF5F7FF.toInt())
-			textSize = 14f
-			val horizontal = (18 * density).toInt()
-			val vertical = (10 * density).toInt()
-			setPadding(horizontal, vertical, horizontal, vertical)
+			setTextColor(context.getColor(R.color.label))
+			textSize = 15f
+			gravity = Gravity.CENTER_VERTICAL
+			minHeight = (44 * density).toInt()
+			setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_swap, 0, 0, 0)
+			compoundDrawablePadding = (8 * density).toInt()
+			setPaddingRelative((14 * density).toInt(), (8 * density).toInt(), (18 * density).toInt(), (8 * density).toInt())
+			setOnClickListener { onToggle() }
 		}
 		val slop = ViewConfiguration.get(context).scaledTouchSlop
 		var startX = 0f
@@ -75,7 +80,7 @@ class CallModeOverlay(private val context: Context, private val onToggle: () -> 
 						windows.updateViewLayout(touched, layout)
 					}
 				}
-				MotionEvent.ACTION_UP -> if (!dragging) onToggle()
+				MotionEvent.ACTION_UP -> if (!dragging) touched.performClick()
 			}
 			true
 		}
