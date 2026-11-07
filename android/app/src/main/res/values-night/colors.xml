@@ -8,6 +8,4 @@
 	<color name="accent_text">#5CB8FF</color>
 	<color name="red_text">#FF6165</color>
 	<color name="ripple">#29FFFFFF</color>
-	<color name="glass_tint">#CC1C1C1E</color>
-	<color name="glass_solid">#1C1C1E</color>
 </resources>

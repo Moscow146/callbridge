@@ -13,6 +13,4 @@
 	<color name="gray">#6C6C72</color>
 	<color name="red_text">#E9152D</color>
 	<color name="ripple">#1F000000</color>
-	<color name="glass_tint">#CCFFFFFF</color>
-	<color name="glass_solid">#FFFFFF</color>
 </resources>
