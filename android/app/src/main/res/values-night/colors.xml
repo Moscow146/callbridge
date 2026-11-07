@@ -13,5 +13,9 @@
 	<color name="glass_edge">#66000000</color>
 	<color name="glass_highlight">#1FFFFFFF</color>
 	<color name="glass_label">#FFFFFF</color>
-	<color name="glass_bar_tint">#CC1C1C1E</color>
+	<color name="capsule_tint">#611C1C1E</color>
+	<color name="capsule_scrim">#661C1C1E</color>
+	<color name="capsule_edge_top">#66FFFFFF</color>
+	<color name="capsule_edge_bottom">#1AFFFFFF</color>
+	<color name="capsule_shadow">#99000000</color>
 </resources>

@@ -11,6 +11,7 @@ import android.transition.TransitionManager
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowInsets
+import android.widget.FrameLayout
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.ScrollView
@@ -74,33 +75,36 @@ class MainActivity : Activity() {
 		header = findViewById(R.id.header)
 		bottomBar = findViewById(R.id.bottom_bar)
 		val density = resources.displayMetrics.density
-		val barSide = bottomBar.paddingLeft
-		val barBottom = bottomBar.paddingBottom
+		val root = findViewById<View>(R.id.root)
+		val headerParams = header.layoutParams as FrameLayout.LayoutParams
+		val bottomParams = bottomBar.layoutParams as FrameLayout.LayoutParams
+		val headerSide = headerParams.leftMargin
+		val headerTop = headerParams.topMargin
+		val bottomSide = bottomParams.leftMargin
+		val bottomMargin = bottomParams.bottomMargin
 		header.source = scroll
-		header.edgeAtTop = false
-		header.amount = 0f
 		bottomBar.source = scroll
-		bottomBar.edgeAtTop = true
-		findViewById<View>(R.id.root).setOnApplyWindowInsetsListener { _, insets ->
+		root.setOnApplyWindowInsetsListener { _, insets ->
 			val bars = insets.getInsets(WindowInsets.Type.systemBars() or WindowInsets.Type.displayCutout())
-			header.setPadding(bars.left, bars.top, bars.right, 0)
-			bottomBar.setPadding(barSide + bars.left, bottomBar.paddingTop, barSide + bars.right, barBottom + bars.bottom + (12 * density).toInt())
-			scroll.setPadding(bars.left, 0, bars.right, 0)
+			headerParams.setMargins(headerSide + bars.left, headerTop + bars.top, headerSide + bars.right, 0)
+			bottomParams.setMargins(bottomSide + bars.left, 0, bottomSide + bars.right, bottomMargin + bars.bottom)
+			header.layoutParams = headerParams
+			bottomBar.layoutParams = bottomParams
 			insets
 		}
+		val gap = (12 * density).toInt()
 		val fitScroll = View.OnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
-			if (scroll.paddingTop != header.height || scroll.paddingBottom != bottomBar.height) {
-				scroll.setPadding(scroll.paddingLeft, header.height, scroll.paddingRight, bottomBar.height)
+			val top = header.bottom + gap
+			val bottom = root.height - bottomBar.top + gap
+			if (scroll.paddingTop != top || scroll.paddingBottom != bottom) {
+				scroll.setPadding(0, top, 0, bottom)
 			}
 			refreshGlass()
 		}
 		header.addOnLayoutChangeListener(fitScroll)
 		bottomBar.addOnLayoutChangeListener(fitScroll)
 		content.addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ -> refreshGlass() }
-		scroll.setOnScrollChangeListener { _, _, scrollY, _, _ ->
-			header.amount = scrollY / (16 * density)
-			refreshGlass()
-		}
+		scroll.setOnScrollChangeListener { _, _, _, _, _ -> refreshGlass() }
 		primary.setOnClickListener {
 			when {
 				store.load() == null -> scan()

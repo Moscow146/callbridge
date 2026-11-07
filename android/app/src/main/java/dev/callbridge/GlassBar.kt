@@ -2,12 +2,16 @@ package dev.callbridge
 
 import android.content.Context
 import android.graphics.Canvas
+import android.graphics.LinearGradient
 import android.graphics.Paint
+import android.graphics.Path
 import android.graphics.RenderEffect
 import android.graphics.RenderNode
 import android.graphics.Shader
 import android.util.AttributeSet
 import android.view.View
+import android.view.ViewOutlineProvider
+import android.graphics.Outline
 import android.widget.FrameLayout
 
 class GlassBar @JvmOverloads constructor(context: Context, attrs: AttributeSet? = null) : FrameLayout(context, attrs) {
@@ -22,21 +26,16 @@ class GlassBar @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
 			field = value
 			invalidate()
 		}
-	var amount = 1f
-		set(value) {
-			val clamped = value.coerceIn(0f, 1f)
-			if (field == clamped) return
-			field = clamped
-			invalidate()
-		}
-	var edgeAtTop = false
-
 	private val density = resources.displayMetrics.density
 	private val margin = (48 * density).toInt()
 	private val node = RenderNode("glass").apply {
 		setRenderEffect(RenderEffect.createBlurEffect(24 * density, 24 * density, Shader.TileMode.CLAMP))
 	}
-	private val paint = Paint()
+	private val radius = 28 * density
+	private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+	private val clip = Path()
+	private val ring = Path()
+	private val stroke = 1.25f * density
 	private val here = IntArray(2)
 	private val there = IntArray(2)
 	private var keepDrawingUntil = 0L
@@ -44,6 +43,23 @@ class GlassBar @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
 
 	init {
 		setWillNotDraw(false)
+		elevation = 10 * density
+		outlineProvider = object : ViewOutlineProvider() {
+			override fun getOutline(view: View, outline: Outline) {
+				outline.setRoundRect(0, 0, view.width, view.height, radius)
+			}
+		}
+		outlineSpotShadowColor = context.getColor(R.color.capsule_shadow)
+		outlineAmbientShadowColor = context.getColor(R.color.capsule_shadow)
+	}
+
+	override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
+		super.onSizeChanged(w, h, oldw, oldh)
+		clip.reset()
+		clip.addRoundRect(0f, 0f, w.toFloat(), h.toFloat(), radius, radius, Path.Direction.CW)
+		val half = stroke / 2
+		ring.reset()
+		ring.addRoundRect(half, half, w - half, h - half, radius - half, radius - half, Path.Direction.CW)
 	}
 
 	fun invalidateFor(millis: Long) {
@@ -64,21 +80,18 @@ class GlassBar @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
 	override fun onDraw(canvas: Canvas) {
 		val backdrop = source
 		val blurred = blurEnabled && backdrop != null && canvas.isHardwareAccelerated
-		if (amount < 1f) {
-			paint.color = context.getColor(R.color.bg_grouped)
-			canvas.drawRect(0f, 0f, width.toFloat(), height.toFloat(), paint)
-		}
-		if (amount > 0f) {
-			canvas.saveLayerAlpha(0f, 0f, width.toFloat(), height.toFloat(), (amount * 255).toInt())
-			if (blurred && backdrop != null) drawGlass(canvas, backdrop) else drawSolid(canvas)
-			drawEdge(canvas, blurred)
-			canvas.restore()
-		}
+		canvas.save()
+		canvas.clipPath(clip)
+		if (blurred && backdrop != null) drawGlass(canvas, backdrop) else drawSolid(canvas)
+		canvas.restore()
+		drawEdge(canvas, blurred)
 	}
 
 	private fun drawSolid(canvas: Canvas) {
+		paint.shader = null
+		paint.style = Paint.Style.FILL
 		paint.color = context.getColor(R.color.surface)
-		canvas.drawRect(0f, 0f, width.toFloat(), height.toFloat(), paint)
+		canvas.drawPath(clip, paint)
 	}
 
 	private fun drawGlass(canvas: Canvas, backdrop: View) {
@@ -92,21 +105,29 @@ class GlassBar @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
 		node.endRecording()
 		canvas.drawColor(context.getColor(R.color.bg_grouped))
 		canvas.save()
-		canvas.clipRect(0, 0, width, height)
 		canvas.translate(-margin.toFloat(), -margin.toFloat())
 		canvas.drawRenderNode(node)
 		canvas.restore()
-		canvas.drawColor(context.getColor(R.color.glass_bar_tint))
+		canvas.drawColor(context.getColor(R.color.capsule_tint))
+		canvas.drawColor(context.getColor(R.color.capsule_scrim))
 	}
 
 	private fun drawEdge(canvas: Canvas, glass: Boolean) {
-		val y = if (edgeAtTop) 0f else height - 1f
-		paint.color = context.getColor(if (glass) R.color.glass_edge else R.color.separator)
-		canvas.drawRect(0f, y, width.toFloat(), y + 1f, paint)
+		paint.style = Paint.Style.STROKE
+		paint.strokeWidth = stroke
 		if (glass) {
-			val inner = if (edgeAtTop) 1f else height - 2f
-			paint.color = context.getColor(R.color.glass_stroke)
-			canvas.drawRect(0f, inner, width.toFloat(), inner + 1f, paint)
+			paint.shader = LinearGradient(
+				0f, 0f, 0f, height.toFloat(),
+				context.getColor(R.color.capsule_edge_top),
+				context.getColor(R.color.capsule_edge_bottom),
+				Shader.TileMode.CLAMP,
+			)
+		} else {
+			paint.shader = null
+			paint.color = context.getColor(R.color.separator)
 		}
+		canvas.drawPath(ring, paint)
+		paint.shader = null
+		paint.style = Paint.Style.FILL
 	}
 }
