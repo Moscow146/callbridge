@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using System.Windows.Threading;
 using CallBridge.Core.Audio;
 using CallBridge.Core.Protocol;
 
@@ -27,8 +28,10 @@ public partial class MainWindow
 		Height = scene switch
 		{
 			"pairing" => 830,
+			"pairingscroll" => 560,
 			"ringing" => 690,
 			"call" => 690,
+			"callscroll" => 540,
 			_ => 660,
 		};
 		Topmost = true;
@@ -38,8 +41,11 @@ public partial class MainWindow
 		Left = 100;
 		VolumeSlider.Value = 1;
 		MicLevel.Value = 0.55;
-		if (scene == "pairing")
+		if (scene.StartsWith("pairing"))
+		{
+			ScrollDemo(scene == "pairingscroll" ? 150 : 0);
 			return;
+		}
 
 		StatusText.Text = Strings.Format("ConnectedTo", "Pixel 9");
 		StatusDot.SetResourceReference(System.Windows.Shapes.Shape.FillProperty, "Green");
@@ -56,9 +62,10 @@ public partial class MainWindow
 		ShowState(scene switch
 		{
 			"ringing" => new PhoneState(CallState.Ringing, "+1 555 0100", "Anna Smith"),
-			"call" => new PhoneState(CallState.Active, "+1 555 0100", "Anna Smith"),
+			"call" or "callscroll" => new PhoneState(CallState.Active, "+1 555 0100", "Anna Smith"),
 			_ => new PhoneState(CallState.Idle, null, null),
 		});
+		ScrollDemo(scene == "callscroll" ? 120 : 0);
 		if (scene == "suggest")
 		{
 			Topmost = true;
@@ -69,5 +76,11 @@ public partial class MainWindow
 				DialBox.Text = "an";
 			}, System.Windows.Threading.DispatcherPriority.ApplicationIdle);
 		}
+	}
+
+	void ScrollDemo(double offset)
+	{
+		if (offset > 0)
+			Loaded += (_, _) => Dispatcher.BeginInvoke(() => Scroller.ScrollToVerticalOffset(offset), DispatcherPriority.ApplicationIdle);
 	}
 }

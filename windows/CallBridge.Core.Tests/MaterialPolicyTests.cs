@@ -60,4 +60,18 @@ public class MaterialPolicyTests
 		Assert.True(MaterialPolicy.GlassLayer(WindowMaterial.Mica));
 		Assert.False(MaterialPolicy.GlassLayer(WindowMaterial.Solid));
 	}
+
+	[Fact]
+	public void BlurAndFloatingGlassAppearOnlyWhenEveryConditionHolds()
+	{
+		foreach (var build in new[] { 0, Windows10, Windows11First, Windows11 })
+			foreach (var highContrast in new[] { false, true })
+				foreach (var transparency in new[] { false, true })
+					foreach (var backdrop in new[] { false, true })
+					{
+						var material = MaterialPolicy.Choose(new MaterialContext(build, highContrast, transparency, backdrop));
+						var expected = build >= MaterialPolicy.MinimumBackdropBuild && !highContrast && transparency && backdrop;
+						Assert.Equal(expected, MaterialPolicy.GlassLayer(material));
+					}
+	}
 }

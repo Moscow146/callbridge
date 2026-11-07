@@ -7,6 +7,8 @@
 	<FontFamily x:Key="UiFont">Segoe UI Variable Text, Segoe UI</FontFamily>
 	<FontFamily x:Key="IconFont">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>
 
+	<DropShadowEffect x:Key="GlassShadowMica" BlurRadius="20" ShadowDepth="5" Direction="270" Opacity="0.28" Color="#FF000000"/>
+
 	<DropShadowEffect x:Key="PopupShadow" BlurRadius="24" ShadowDepth="6" Direction="270" Opacity="0.22" Color="#FF000000"/>
 
 	<Style x:Key="FocusRing" TargetType="Control">

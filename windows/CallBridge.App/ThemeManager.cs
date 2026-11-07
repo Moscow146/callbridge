@@ -3,6 +3,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Interop;
+using System.Windows.Media.Effects;
 using System.Windows.Media;
 using CallBridge.Core.Appearance;
 using Microsoft.Win32;
@@ -102,13 +103,30 @@ static class ThemeManager
 		var resources = Application.Current.Resources;
 		resources.Remove(GlassKey);
 		resources.Remove(EdgeKey);
+		resources.Remove("GlassRim");
+		resources.Remove("GlassSheen");
+		resources.Remove("GlassBlur");
+		resources.Remove("GlassShadow");
 		if (MaterialPolicy.GlassLayer(Material))
 		{
 			if (resources[EdgeMicaKey] is Brush edge)
 				resources[EdgeKey] = edge;
+			if (resources["GlassRimMica"] is Brush rim)
+				resources["GlassRim"] = rim;
+			if (resources["GlassSheenMica"] is Brush sheen)
+				resources["GlassSheen"] = sheen;
+			if (resources["GlassShadowMica"] is Effect shadow)
+				resources["GlassShadow"] = shadow;
+			resources["GlassBlur"] = Visibility.Visible;
 		}
-		else if (resources[GlassSolidKey] is Brush solid)
-			resources[GlassKey] = solid;
+		else
+		{
+			if (resources[GlassSolidKey] is Brush solid)
+				resources[GlassKey] = solid;
+			if (resources["Separator"] is Brush rim)
+				resources["GlassRim"] = rim;
+			resources["GlassBlur"] = Visibility.Collapsed;
+		}
 	}
 
 	public static void StyleWindow(Window window)
