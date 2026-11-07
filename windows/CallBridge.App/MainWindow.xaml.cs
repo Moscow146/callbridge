@@ -24,6 +24,8 @@ public partial class MainWindow : Window
 	IReadOnlyList<Contact> contacts = [];
 	Contact? picked;
 	PhoneSession? session;
+	PhoneState lastState = new(CallState.Idle, null, null);
+	CallMode callMode = CallMode.Pc;
 	TrayIcon? tray;
 	DiscoveryResponder? discovery;
 	bool loading = true;
@@ -80,7 +82,7 @@ public partial class MainWindow : Window
 		}
 
 		tray = new TrayIcon(ShowFromTray, Quit);
-		levelTimer.Tick += (_, _) => MicLevel.Value = session?.MicLevel ?? 0;
+		levelTimer.Tick += (_, _) => MicLevel.Value = MeterValue(session?.MicLevel ?? 0);
 		levelTimer.Start();
 		Closing += OnClosing;
 		Closed += (_, _) =>
@@ -93,6 +95,8 @@ public partial class MainWindow : Window
 	}
 
 	public bool Ready { get; }
+
+	static double MeterValue(float level) => level <= 0 ? 0 : Math.Clamp(1 + 20 * Math.Log10(level) / 60, 0, 1);
 
 	public void ShowFromTray()
 	{
@@ -164,6 +168,7 @@ public partial class MainWindow : Window
 		session = s;
 		s.StateChanged += state => Dispatcher.Invoke(() => ShowState(state));
 		s.ContactsChanged += list => Dispatcher.Invoke(() => contacts = list);
+		s.CallModeChanged += mode => Dispatcher.Invoke(() => ShowCallMode(mode));
 		s.AudioRouteChanged += reason => Dispatcher.Invoke(() => ShowRoute(reason == null ? null : Strings.Format("AudioUnavailable", reason)));
 		StatusText.Text = Strings.Format("ConnectedTo", s.DeviceName);
 		StatusDot.Fill = (Brush)FindResource("Green");
@@ -182,8 +187,15 @@ public partial class MainWindow : Window
 		StatusDot.Fill = (Brush)FindResource("Amber");
 		QrCard.Visibility = Visibility.Visible;
 		DialButton.IsEnabled = false;
+		callMode = CallMode.Pc;
 		ShowState(new PhoneState(CallState.Idle, null, null));
 		ShowRoute(null);
+	}
+
+	void ShowCallMode(CallMode mode)
+	{
+		callMode = mode;
+		ShowState(lastState);
 	}
 
 	void ShowRoute(string? message)
@@ -206,6 +218,8 @@ public partial class MainWindow : Window
 
 	void ShowState(PhoneState state)
 	{
+		var ringingAgain = state.Call == CallState.Ringing && lastState.Call == CallState.Ringing;
+		lastState = state;
 		var who = state.Name ?? state.Number ?? Strings.Get("UnknownNumber");
 		var idle = state.Call == CallState.Idle;
 		CallTitle.Text = idle ? Strings.Get("NoCall") : who;
@@ -213,13 +227,15 @@ public partial class MainWindow : Window
 		{
 			CallState.Ringing => Strings.Get("IncomingCall"),
 			CallState.Dialing => Strings.Get("Calling"),
-			CallState.Active => Strings.Get("InCall"),
+			CallState.Active => Strings.Get(callMode == CallMode.Phone ? "InCallOnPhone" : "InCall"),
 			CallState.Held => Strings.Get("OnHold"),
 			_ => Strings.Get("WaitingCall"),
 		};
 		var ringing = state.Call == CallState.Ringing;
-		if (ringing && (!IsVisible || !IsActive))
+		if (ringing && !ringingAgain && (!IsVisible || !IsActive))
 			tray?.Notify(Strings.Get("IncomingCall"), who);
+		ModeButton.Content = Strings.Get(callMode == CallMode.Phone ? "MoveToPc" : "MoveToPhone");
+		ModeButton.Visibility = state.Call == CallState.Active ? Visibility.Visible : Visibility.Collapsed;
 		AnswerButton.Visibility = ringing ? Visibility.Visible : Visibility.Collapsed;
 		RejectButton.Visibility = ringing ? Visibility.Visible : Visibility.Collapsed;
 		HangupButton.Visibility = state.Call is CallState.Active or CallState.Dialing or CallState.Held ? Visibility.Visible : Visibility.Collapsed;
@@ -274,6 +290,8 @@ public partial class MainWindow : Window
 	void OnReject(object sender, RoutedEventArgs e) => _ = session?.SendCommandAsync("reject");
 
 	void OnHangup(object sender, RoutedEventArgs e) => _ = session?.SendCommandAsync("hangup");
+
+	void OnModeClick(object sender, RoutedEventArgs e) => _ = session?.SetCallModeAsync(callMode == CallMode.Phone ? CallMode.Pc : CallMode.Phone);
 
 	void OnDial(object sender, RoutedEventArgs e)
 	{

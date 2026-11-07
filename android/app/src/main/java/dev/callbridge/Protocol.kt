@@ -19,6 +19,11 @@ object FrameType {
 	const val PONG = 0x31
 }
 
+object CallMode {
+	const val PC = "pc"
+	const val PHONE = "phone"
+}
+
 const val PROTOCOL_VERSION = 1
 const val DEFAULT_PORT = 47800
 private const val MAX_PAYLOAD = 1 shl 20

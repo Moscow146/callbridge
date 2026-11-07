@@ -12,6 +12,12 @@ public enum CallState
 	Held,
 }
 
+public enum CallMode
+{
+	Pc,
+	Phone,
+}
+
 public sealed record Hello(int Version, string Device, string Token);
 
 public sealed record HelloAck(int Version, bool Ok, string? Error = null);

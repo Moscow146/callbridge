@@ -41,6 +41,7 @@ Phone→PC:
 - `{"t":"state","call":"idle|ringing|dialing|active|held","number":"+7...","name":"..."}`
 - `{"t":"audio","route":"ok|unavailable","reason":"..."}`
 - `{"t":"contacts","items":[{"name":"...","number":"..."}]}`: sent on connect, when contacts change, when the contacts permission is granted, and when the PC asks for it
+- `{"t":"mode","mode":"pc|phone"}`: where the call audio is now. The phone owns this value and sends it on connect and on every change
 
 PC→phone:
 
@@ -49,6 +50,7 @@ PC→phone:
 - `{"t":"reject"}`
 - `{"t":"dial","number":"+7..."}`
 - `{"t":"contacts"}`: asks the phone to send its contacts again
+- `{"t":"mode","mode":"pc|phone"}`: asks the phone to move the current call. `pc` silences the phone's speaker and microphone and streams the call, `phone` is an ordinary call with no streaming. Every new call starts in `pc`, and the phone falls back to ordinary audio when the connection is lost
 
 ## Pairing
 

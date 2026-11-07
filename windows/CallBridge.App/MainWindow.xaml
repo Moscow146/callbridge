@@ -127,6 +127,8 @@
 								</TextBlock>
 							</Button>
 						</StackPanel>
+						<Button x:Name="ModeButton" Style="{StaticResource GlassButton}" HorizontalAlignment="Center" Margin="0,14,0,0"
+								Content="{local:L MoveToPhone}" Click="OnModeClick" Visibility="Collapsed"/>
 						<Grid Margin="0,18,0,0">
 							<Grid.ColumnDefinitions>
 								<ColumnDefinition Width="*"/>

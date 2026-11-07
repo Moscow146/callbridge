@@ -6,11 +6,13 @@ import android.media.AudioDeviceInfo
 import android.media.AudioFormat
 import android.media.AudioManager
 import android.media.AudioTrack
+import android.os.SystemClock
 import android.util.Log
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.TimeUnit
 
 private const val QUEUE_FRAMES = 8
+private const val ROUTE_SETTLE_MS = 1500L
 
 /** Plays the PC microphone into the call by routing an AudioTrack to the telephony transmit device. */
 class UplinkPlayer(private val context: Context, private val onFailure: (String) -> Unit) {
@@ -39,6 +41,8 @@ class UplinkPlayer(private val context: Context, private val onFailure: (String)
 
 	private fun run() {
 		val audio = context.getSystemService(AudioManager::class.java)
+		while (running && audio.mode != AudioManager.MODE_IN_CALL) Thread.sleep(100)
+		if (!running) return
 		val devices = audio.getDevices(AudioManager.GET_DEVICES_OUTPUTS)
 		Log.i("CallBridge", "output devices: " + devices.joinToString { "${it.type}:${it.productName}" })
 		val transmit = devices.firstOrNull { it.type == AudioDeviceInfo.TYPE_TELEPHONY }
@@ -67,10 +71,20 @@ class UplinkPlayer(private val context: Context, private val onFailure: (String)
 		try {
 			track.preferredDevice = transmit
 			track.play()
-			Log.i("CallBridge", "uplink routed to ${track.routedDevice?.type}:${track.routedDevice?.productName}")
+			val started = SystemClock.elapsedRealtime()
+			var checked = false
 			while (running) {
-				val frame = queue.poll(100, TimeUnit.MILLISECONDS) ?: continue
-				track.write(frame, 0, frame.size)
+				val frame = queue.poll(100, TimeUnit.MILLISECONDS)
+				if (frame != null) track.write(frame, 0, frame.size)
+				if (!checked && SystemClock.elapsedRealtime() - started >= ROUTE_SETTLE_MS) {
+					checked = true
+					val routed = track.routedDevice
+					Log.i("CallBridge", "uplink routed to ${routed?.type}:${routed?.productName}")
+					if (routed != null && routed.type != AudioDeviceInfo.TYPE_TELEPHONY) {
+						onFailure("PC microphone unavailable: routed to device type ${routed.type}")
+						return
+					}
+				}
 			}
 		} finally {
 			runCatching { track.stop() }

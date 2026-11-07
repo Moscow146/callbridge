@@ -3,6 +3,7 @@ package dev.callbridge
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.app.Service
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -10,6 +11,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.ServiceInfo
 import android.database.ContentObserver
+import android.graphics.drawable.Icon
 import android.provider.ContactsContract
 import android.os.Build
 import android.os.Handler
@@ -27,7 +29,9 @@ private const val CONTACTS_DEBOUNCE_MS = 3000L
 class BridgeService : Service(), BridgeConnection.Listener {
 	private val main = Handler(Looper.getMainLooper())
 	private lateinit var calls: CallController
-	private lateinit var ducker: EarpieceDucker
+	private lateinit var muter: PhoneAudioMuter
+	private lateinit var overlay: CallModeOverlay
+	private var callMode = CallMode.PC
 	private var connection: BridgeConnection? = null
 	private var capture: DownlinkCapture? = null
 	@Volatile private var uplink: UplinkPlayer? = null
@@ -59,8 +63,9 @@ class BridgeService : Service(), BridgeConnection.Listener {
 	override fun onCreate() {
 		super.onCreate()
 		calls = CallController(this)
-		ducker = EarpieceDucker(this)
-		ducker.restore()
+		muter = PhoneAudioMuter(this)
+		muter.restore()
+		overlay = CallModeOverlay(this, ::toggleCallMode)
 		val channel = NotificationChannel(CHANNEL_ID, getString(R.string.notification_channel), NotificationManager.IMPORTANCE_LOW)
 		getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
 		registerReceiver(phoneReceiver, IntentFilter(TelephonyManager.ACTION_PHONE_STATE_CHANGED), RECEIVER_EXPORTED)
@@ -72,11 +77,16 @@ class BridgeService : Service(), BridgeConnection.Listener {
 			sendContacts()
 			return START_NOT_STICKY
 		}
+		if (intent?.action == ACTION_TOGGLE_MODE) {
+			toggleCallMode()
+			return START_STICKY
+		}
 		if (intent?.action == ACTION_STOP) {
 			stopping = true
 			disconnect()
 			BridgeState.running = false
 			BridgeState.update(getString(R.string.status_disconnected))
+			syncCall()
 			stopForeground(STOP_FOREGROUND_REMOVE)
 			stopSelf()
 			return START_NOT_STICKY
@@ -89,15 +99,44 @@ class BridgeService : Service(), BridgeConnection.Listener {
 		}
 		stopping = false
 		BridgeState.running = true
-		val notification = Notification.Builder(this, CHANNEL_ID)
-			.setSmallIcon(R.drawable.ic_notification)
-			.setContentTitle(getString(R.string.app_name))
-			.setContentText(getString(R.string.notification_text, current.name))
-			.setOngoing(true)
-			.build()
-		startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE)
+		startForeground(NOTIFICATION_ID, buildNotification(), ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE)
 		connect()
 		return START_REDELIVER_INTENT
+	}
+
+	private fun buildNotification(): Notification {
+		val builder = Notification.Builder(this, CHANNEL_ID)
+			.setSmallIcon(R.drawable.ic_notification)
+			.setContentTitle(getString(R.string.app_name))
+			.setContentText(getString(R.string.notification_text, pairing?.name.orEmpty()))
+			.setOngoing(true)
+		if (lastCall == "active" && BridgeState.connected) {
+			val toggle = PendingIntent.getService(
+				this, 0, Intent(this, BridgeService::class.java).setAction(ACTION_TOGGLE_MODE),
+				PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
+			)
+			val label = getString(if (callMode == CallMode.PC) R.string.mode_move_to_phone else R.string.mode_move_to_pc)
+			builder.addAction(Notification.Action.Builder(Icon.createWithResource(this, R.drawable.ic_notification), label, toggle).build())
+		}
+		return builder.build()
+	}
+
+	private fun toggleCallMode() {
+		setCallMode(if (callMode == CallMode.PC) CallMode.PHONE else CallMode.PC)
+	}
+
+	private fun setCallMode(mode: String) {
+		if (mode != CallMode.PC && mode != CallMode.PHONE) return
+		callMode = mode
+		syncCall()
+	}
+
+	private fun syncCall() {
+		val inCall = lastCall == "active" && BridgeState.connected
+		if (inCall && callMode == CallMode.PC) startCapture() else stopCapture()
+		if (inCall) overlay.show(callMode) else overlay.hide()
+		if (BridgeState.running) getSystemService(NotificationManager::class.java).notify(NOTIFICATION_ID, buildNotification())
+		connection?.sendControl(JSONObject().put("t", "mode").put("mode", callMode))
 	}
 
 	private fun connect() {
@@ -125,7 +164,7 @@ class BridgeService : Service(), BridgeConnection.Listener {
 		BridgeState.update(getString(R.string.status_connected, pairing?.name), connected = true)
 		main.post {
 			sendState(lastCall, lastNumber)
-			if (lastCall == "active") startCapture()
+			syncCall()
 		}
 		sendContacts()
 	}
@@ -144,11 +183,13 @@ class BridgeService : Service(), BridgeConnection.Listener {
 			if (reason == "wrong code") {
 				BridgeState.running = false
 				BridgeState.update(getString(R.string.status_outdated))
+				overlay.hide()
 				stopForeground(STOP_FOREGROUND_REMOVE)
 				stopSelf()
 				return@post
 			}
 			BridgeState.update(getString(R.string.status_retry, if (reason == "PC not reachable") getString(R.string.reason_unreachable) else reason))
+			syncCall()
 			main.postDelayed({ if (!stopping) connect() }, RECONNECT_DELAY_MS)
 		}
 	}
@@ -160,6 +201,7 @@ class BridgeService : Service(), BridgeConnection.Listener {
 				"reject", "hangup" -> calls.hangup()
 				"dial" -> calls.dial(message.optString("number"))
 				"contacts" -> sendContacts()
+				"mode" -> setCallMode(message.optString("mode"))
 			}
 		}
 	}
@@ -172,9 +214,12 @@ class BridgeService : Service(), BridgeConnection.Listener {
 		main.post {
 			if (number != null) lastNumber = number
 			lastCall = state
-			if (state == "idle") lastNumber = null
+			if (state == "idle") {
+				lastNumber = null
+				callMode = CallMode.PC
+			}
 			sendState(state, lastNumber)
-			if (state == "active") startCapture() else stopCapture()
+			syncCall()
 		}
 	}
 
@@ -196,21 +241,23 @@ class BridgeService : Service(), BridgeConnection.Listener {
 		uplink = UplinkPlayer(this) { reason ->
 			link.sendControl(JSONObject().put("t", "audio").put("route", "unavailable").put("reason", reason))
 		}.also { it.start() }
-		ducker.duck()
+		muter.mute()
 	}
 
 	private fun stopCapture() {
+		if (capture == null) return
 		capture?.stop()
 		capture = null
 		uplink?.stop()
 		uplink = null
-		ducker.restore()
+		muter.restore()
 	}
 
 	override fun onDestroy() {
 		contentResolver.unregisterContentObserver(contactsObserver)
 		unregisterReceiver(phoneReceiver)
 		disconnect()
+		overlay.hide()
 		super.onDestroy()
 	}
 
@@ -219,5 +266,6 @@ class BridgeService : Service(), BridgeConnection.Listener {
 	companion object {
 		const val ACTION_STOP = "dev.callbridge.STOP"
 		const val ACTION_CONTACTS = "dev.callbridge.CONTACTS"
+		const val ACTION_TOGGLE_MODE = "dev.callbridge.TOGGLE_MODE"
 	}
 }

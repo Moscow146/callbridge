@@ -8,7 +8,9 @@ import android.animation.ObjectAnimator
 import android.animation.ValueAnimator
 import android.graphics.RenderEffect
 import android.graphics.Shader
+import android.net.Uri
 import android.os.Bundle
+import android.provider.Settings
 import android.view.View
 import android.view.WindowInsets
 import android.view.animation.AccelerateDecelerateInterpolator
@@ -59,6 +61,9 @@ class MainActivity : Activity() {
 		scan.setOnClickListener { startActivityForResult(Intent(this, ScanActivity::class.java), REQUEST_SCAN) }
 		val missing = PERMISSIONS.filter { checkSelfPermission(it) != PackageManager.PERMISSION_GRANTED }
 		if (missing.isNotEmpty()) requestPermissions(missing.toTypedArray(), 1)
+		if (!Settings.canDrawOverlays(this)) {
+			startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName")))
+		}
 		acceptDeepLink(intent)
 		refresh()
 	}

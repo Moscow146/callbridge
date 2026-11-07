@@ -29,7 +29,8 @@ The phone stays in your pocket. Its cellular call audio is streamed to the PC, s
 | Windows app (WPF, WASAPI, Opus), tray, incoming call notification | works: device pickers, volume, mute, answer / reject / hang up / dial with contact suggestions |
 | Android app: call state, answer, hang up, dial, QR pairing | implemented |
 | Android app: caller audio to PC | implemented (`VOICE_DOWNLINK`), needs the app installed as a system app |
-| PC microphone into the call | works: an AudioTrack routed to the telephony transmit device, the phone itself stays silent during the call |
+| PC microphone into the call | works: an AudioTrack routed to the telephony transmit device, the phone's speaker and microphone stay silent during the call |
+| Call modes | works: move a running call between the PC and the phone from the PC app, a floating button on the phone, or the notification |
 
 
 ## Requirements
@@ -42,7 +43,7 @@ The phone stays in your pocket. Its cellular call audio is streamed to the PC, s
 Download from the [releases page](https://github.com/Moscow146/callbridge/releases) (or the artifacts of a [workflow run](https://github.com/Moscow146/callbridge/actions)):
 
 - `CallBridge.exe`: the Windows app, a single self-contained file.
-- `callbridge-magisk.zip`: flash it in the Magisk app and reboot. It installs CallBridge into `/system/priv-app`, grants `CAPTURE_AUDIO_OUTPUT`, `CONNECTIVITY_USE_RESTRICTED_NETWORKS` (so the bridge keeps working while a VPN is on) and the runtime permissions.
+- `callbridge-magisk.zip`: flash it in the Magisk app and reboot. It installs CallBridge into `/system/priv-app`, grants `CAPTURE_AUDIO_OUTPUT`, `MODIFY_PHONE_STATE` (to play the PC microphone into the call), `CONNECTIVITY_USE_RESTRICTED_NETWORKS` (so the bridge keeps working while a VPN is on), the runtime permissions and the floating button.
 
 ## Use
 
@@ -51,6 +52,9 @@ Download from the [releases page](https://github.com/Moscow146/callbridge/releas
 3. Over Wi-Fi the PC must accept connections: run `.\scripts\allow-firewall.ps1` once (it asks for administrator rights and opens TCP 47800 and UDP 47801 on private networks). If the PC address changes, the phone finds the PC again by itself.
 4. Over USB instead of Wi-Fi: `adb reverse tcp:47800 tcp:47800`. The QR already contains `127.0.0.1`.
 5. Call the phone, the PC shows the caller and Answer / Reject buttons.
+6. A call starts on the PC, with the phone's speaker and microphone silent. To move it, press Move to phone in the PC app, the floating button over the phone's call screen (drag it if it is in the way), or the action in the CallBridge notification. If the connection to the PC is lost, the call continues on the phone.
+
+Keep Bluetooth headsets disconnected from the phone during calls on the PC: the HAL refuses to mute a Bluetooth headset's microphone, so it would stay live in the call.
 
 ## Build
 
