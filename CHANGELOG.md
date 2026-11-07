@@ -2,7 +2,16 @@
 
 ## Unreleased
 
+## 0.4.0
+
+- Glass by the look of Apple materials on all three: the PC window, the phone app and the website. It is only the control layer; cards, lists and text stay solid.
+- PC app: on Windows 11 the window uses the system Mica material, and the header and the call buttons bar are floating rounded capsules of glass above the content, inspired by Apple's materials: the cards scroll under them and show through as a blurred copy with a soft edge highlight and shadow. Cards, lists and text stay solid. Windows 10, high contrast and the "Transparency effects" switch in Windows colour settings give a plain solid window, and the app follows that switch while it runs.
 - Phone app: the header and the bottom panel are floating glass capsules with a gradient rim and a soft shadow, and the content scrolls under them, inspired by Apple materials. Without window blur they fall back to the solid surface colour.
+- Phone app: the call mode pill over the call screen is layered glass without window blur, which would blur the whole system call screen on some phones.
+- Website: the header and the buttons are floating glass capsules over coloured bands, with a solid fallback when the browser has no blur or the reader asks for reduced transparency or more contrast.
+- The workflow actions run on Node 24 and the PC app uses NAudio 2.4.0.
+
+Reflash the Magisk module and reboot to update the phone app, then replace `CallBridge.exe`.
 
 ## 0.3.0
 
@@ -12,7 +21,6 @@
 - Phone app: permissions are requested when you connect instead of at launch, and the screen says what is missing and why. The connection only starts once microphone access is allowed.
 - The QR scanner explains itself, has a Cancel button and offers Settings when camera access is off.
 - The floating call button has a spoken label and a standard click action for TalkBack.
-- PC app: on Windows 11 the window uses the system Mica material, and the header and the call buttons bar are floating rounded capsules of glass above the content, inspired by Apple's materials: the cards scroll under them and show through as a blurred copy with a soft edge highlight and shadow. Cards, lists and text stay solid. Windows 10, high contrast and the "Transparency effects" switch in Windows colour settings give a plain solid window, and the app follows that switch while it runs.
 - CI can sign the APK with a permanent key when the repository has one, and the build workflow's default token is read-only.
 
 Reflash the Magisk module and reboot to update the phone app.
