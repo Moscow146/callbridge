@@ -13,4 +13,10 @@
 	<color name="gray">#6C6C72</color>
 	<color name="red_text">#E9152D</color>
 	<color name="ripple">#1F000000</color>
+	<color name="glass_fill">#CCFFFFFF</color>
+	<color name="glass_stroke">#99FFFFFF</color>
+	<color name="glass_edge">#26000000</color>
+	<color name="glass_highlight">#8CFFFFFF</color>
+	<color name="glass_label">#000000</color>
+	<color name="glass_bar_tint">#CCFFFFFF</color>
 </resources>

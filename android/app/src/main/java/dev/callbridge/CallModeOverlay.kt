@@ -8,6 +8,7 @@ import android.view.Gravity
 import android.view.MotionEvent
 import android.view.ViewConfiguration
 import android.view.WindowManager
+import android.widget.FrameLayout
 import android.widget.TextView
 import kotlin.math.abs
 
@@ -24,7 +25,8 @@ class CallModeOverlay(private val context: Context, private val onToggle: () -> 
 		gravity = Gravity.CENTER
 		y = (-35 * density).toInt()
 	}
-	private var pill: TextView? = null
+	private var pill: FrameLayout? = null
+	private var label: TextView? = null
 
 	fun show(mode: String) {
 		if (!Settings.canDrawOverlays(context)) return
@@ -32,29 +34,41 @@ class CallModeOverlay(private val context: Context, private val onToggle: () -> 
 			windows.addView(it, layout)
 			pill = it
 		}
-		view.setText(if (mode == CallMode.PC) R.string.mode_on_pc else R.string.mode_on_phone)
+		val text = label ?: return
+		text.setText(if (mode == CallMode.PC) R.string.mode_on_pc else R.string.mode_on_phone)
 		val action = context.getString(if (mode == CallMode.PC) R.string.mode_move_to_phone else R.string.mode_move_to_pc)
-		view.contentDescription = "${view.text}. $action"
+		view.contentDescription = "${text.text}. $action"
 	}
 
 	fun hide() {
 		pill?.let { windows.removeView(it) }
 		pill = null
+		label = null
 	}
 
 	@SuppressLint("ClickableViewAccessibility")
-	private fun create(): TextView {
-		val view = TextView(context).apply {
+	private fun create(): FrameLayout {
+		val text = TextView(context).apply {
 			setBackgroundResource(R.drawable.pill_overlay)
-			setTextColor(context.getColor(R.color.label))
+			setTextColor(context.getColor(R.color.glass_label))
 			textSize = 15f
 			gravity = Gravity.CENTER_VERTICAL
 			minHeight = (44 * density).toInt()
 			setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_swap, 0, 0, 0)
 			compoundDrawablePadding = (8 * density).toInt()
 			setPaddingRelative((14 * density).toInt(), (8 * density).toInt(), (18 * density).toInt(), (8 * density).toInt())
+			elevation = 8 * density
+		}
+		val margin = (16 * density).toInt()
+		val view = FrameLayout(context).apply {
+			setPadding(margin, margin, margin, margin)
+			clipToPadding = false
+			clipChildren = false
+			isClickable = true
+			addView(text, FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT, FrameLayout.LayoutParams.WRAP_CONTENT))
 			setOnClickListener { onToggle() }
 		}
+		label = text
 		val slop = ViewConfiguration.get(context).scaledTouchSlop
 		var startX = 0f
 		var startY = 0f

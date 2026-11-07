@@ -1,10 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	android:id="@+id/root"
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
-	android:background="@color/bg_grouped"
-	android:fillViewport="true">
+	android:background="@color/bg_grouped">
+
+	<ScrollView
+		android:id="@+id/scroll"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent"
+		android:clipToPadding="false"
+		android:fillViewport="true">
 
 	<LinearLayout
 		android:id="@+id/content"
@@ -18,7 +24,7 @@
 			android:id="@+id/status_badge"
 			android:layout_width="72dp"
 			android:layout_height="72dp"
-			android:layout_marginTop="56dp"
+			android:layout_marginTop="24dp"
 			android:background="@drawable/bg_circle">
 
 			<ImageView
@@ -47,11 +53,6 @@
 			android:layout_height="wrap_content"
 			android:layout_marginTop="4dp"
 			android:gravity="center" />
-
-		<Button
-			android:id="@+id/primary"
-			style="@style/Button.Capsule"
-			android:layout_marginTop="28dp" />
 
 		<TextView
 			android:id="@+id/access_header"
@@ -159,4 +160,36 @@
 			android:paddingHorizontal="16dp"
 			android:text="@string/footer_modes" />
 	</LinearLayout>
-</ScrollView>
+	</ScrollView>
+
+	<dev.callbridge.GlassBar
+		android:id="@+id/header"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_gravity="top">
+
+		<TextView
+			android:id="@+id/header_title"
+			android:layout_width="match_parent"
+			android:layout_height="44dp"
+			android:accessibilityHeading="true"
+			android:fontFamily="sans-serif-medium"
+			android:gravity="center"
+			android:text="@string/app_name"
+			android:textColor="@color/label"
+			android:textSize="17sp" />
+	</dev.callbridge.GlassBar>
+
+	<dev.callbridge.GlassBar
+		android:id="@+id/bottom_bar"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:layout_gravity="bottom"
+		android:paddingHorizontal="20dp"
+		android:paddingTop="12dp">
+
+		<Button
+			android:id="@+id/primary"
+			style="@style/Button.Capsule" />
+	</dev.callbridge.GlassBar>
+</FrameLayout>
