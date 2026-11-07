@@ -171,5 +171,29 @@
 			</nav>
 		</div>
 	</footer>
+	<script>
+		(function () {
+			var links = document.querySelectorAll('.site-nav a[href^="#"]');
+			var map = [];
+			links.forEach(function (a) {
+				var el = document.querySelector(a.getAttribute("href"));
+				if (el) map.push([a, el]);
+			});
+			function update() {
+				var y = window.innerHeight * 0.35;
+				var current = null;
+				map.forEach(function (m) {
+					var r = m[1].getBoundingClientRect();
+					if (r.top <= y && r.bottom > y) current = m[0];
+				});
+				links.forEach(function (a) {
+					if (a === current) a.setAttribute("aria-current", "true");
+					else a.removeAttribute("aria-current");
+				});
+			}
+			window.addEventListener("scroll", update, { passive: true });
+			update();
+		})();
+	</script>
 </body>
 </html>
