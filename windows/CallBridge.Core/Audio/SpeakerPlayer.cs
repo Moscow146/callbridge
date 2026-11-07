@@ -23,9 +23,8 @@ public sealed class SpeakerPlayer : IDisposable
 	public SpeakerPlayer(string? deviceId)
 	{
 		device = AudioDevices.Open(DataFlow.Render, deviceId);
-		buffer = new BufferedWaveProvider(VoiceFormat.Pcm)
+		buffer = new BufferedWaveProvider(VoiceFormat.Pcm, TimeSpan.FromMilliseconds(400))
 		{
-			BufferDuration = TimeSpan.FromMilliseconds(400),
 			DiscardOnBufferOverflow = true,
 		};
 		volume = new VolumeSampleProvider(buffer.ToSampleProvider());
