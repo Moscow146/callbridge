@@ -123,7 +123,7 @@ public partial class MainWindow : Window
 	protected override void OnSourceInitialized(EventArgs e)
 	{
 		base.OnSourceInitialized(e);
-		ThemeManager.StyleTitleBar(this);
+		ThemeManager.StyleWindow(this);
 	}
 
 	void ShowQr()

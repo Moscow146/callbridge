@@ -32,6 +32,7 @@ public partial class MainWindow
 			_ => 660,
 		};
 		Topmost = true;
+		ShowActivated = scene == "suggest";
 		WindowStartupLocation = WindowStartupLocation.Manual;
 		Top = 0;
 		Left = 100;

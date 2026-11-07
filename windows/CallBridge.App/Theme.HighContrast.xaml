@@ -21,4 +21,8 @@
 	<SolidColorBrush x:Key="Orange" Color="{x:Static SystemColors.WindowTextColor}"/>
 	<SolidColorBrush x:Key="Thumb" Color="{x:Static SystemColors.WindowTextColor}"/>
 	<SolidColorBrush x:Key="ThumbRim" Color="{x:Static SystemColors.WindowTextColor}"/>
+	<SolidColorBrush x:Key="GlassBar" Color="{x:Static SystemColors.WindowColor}"/>
+	<SolidColorBrush x:Key="GlassSolid" Color="{x:Static SystemColors.WindowColor}"/>
+	<SolidColorBrush x:Key="SectionEdge" Color="{x:Static SystemColors.WindowTextColor}"/>
+	<SolidColorBrush x:Key="SectionEdgeMica" Color="{x:Static SystemColors.WindowTextColor}"/>
 </ResourceDictionary>

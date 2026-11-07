@@ -8,6 +8,7 @@
 - Phone app: permissions are requested when you connect instead of at launch, and the screen says what is missing and why. The connection only starts once microphone access is allowed.
 - The QR scanner explains itself, has a Cancel button and offers Settings when camera access is off.
 - The floating call button has a spoken label and a standard click action for TalkBack.
+- PC app: on Windows 11 the window uses the system Mica material, and the header and the call buttons bar sit on a glass layer above it, inspired by Apple's materials. Cards, lists and text stay solid. Windows 10, high contrast and the "Transparency effects" switch in Windows colour settings give a plain solid window, and the app follows that switch while it runs.
 - CI can sign the APK with a permanent key when the repository has one, and the build workflow's default token is read-only.
 
 Reflash the Magisk module and reboot to update the phone app.

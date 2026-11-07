@@ -21,4 +21,8 @@
 	<SolidColorBrush x:Key="Orange" Color="#FFFFA056"/>
 	<SolidColorBrush x:Key="Thumb" Color="#FFFFFFFF"/>
 	<SolidColorBrush x:Key="ThumbRim" Color="#FF8E8E93"/>
+	<SolidColorBrush x:Key="GlassBar" Color="#E01C1C1E"/>
+	<SolidColorBrush x:Key="GlassSolid" Color="#FF131315"/>
+	<SolidColorBrush x:Key="SectionEdge" Color="#00000000"/>
+	<SolidColorBrush x:Key="SectionEdgeMica" Color="#FF3F3F43"/>
 </ResourceDictionary>
