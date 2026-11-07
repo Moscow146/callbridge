@@ -51,6 +51,34 @@ public class SessionTests
 	}
 
 	[Fact]
+	public async Task ExchangesCallMode()
+	{
+		using var server = new CallBridgeServer("0123456789abcdef", 47814);
+		server.Start();
+		var session = new TaskCompletionSource<PhoneSession>();
+		var received = new TaskCompletionSource<CallMode>();
+		server.PhoneConnected += s =>
+		{
+			s.CallModeChanged += mode => received.TrySetResult(mode);
+			session.TrySetResult(s);
+		};
+
+		using var client = new TcpClient();
+		await client.ConnectAsync(IPAddress.Loopback, server.Port);
+		var frames = new FrameStream(client.GetStream());
+		await frames.WriteAsync(FrameType.Hello, Json.Bytes(new Hello(Json.ProtocolVersion, "test", server.PairingCode)));
+		await frames.ReadAsync();
+		var phone = await session.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+		await frames.WriteAsync(FrameType.Control, System.Text.Encoding.UTF8.GetBytes("""{"t":"mode","mode":"phone"}"""));
+		Assert.Equal(CallMode.Phone, await received.Task.WaitAsync(TimeSpan.FromSeconds(5)));
+
+		await phone.SetCallModeAsync(CallMode.Pc);
+		var request = await frames.ReadAsync().WaitAsync(TimeSpan.FromSeconds(5));
+		Assert.Equal("""{"t":"mode","mode":"pc"}""", System.Text.Encoding.UTF8.GetString(request!.Value.Payload));
+	}
+
+	[Fact]
 	public async Task AnswersDiscoveryQuery()
 	{
 		using var responder = new DiscoveryResponder("MY-PC", 47800, 47821);

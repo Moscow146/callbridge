@@ -17,4 +17,8 @@
 	<string name="status_retry">Disconnected (%1$s), retrying</string>
 	<string name="status_outdated">Pairing is outdated, scan the QR code again</string>
 	<string name="reason_unreachable">PC not reachable</string>
+	<string name="mode_on_pc">Sound on PC ⇄</string>
+	<string name="mode_on_phone">Sound on phone ⇄</string>
+	<string name="mode_move_to_phone">Move to phone</string>
+	<string name="mode_move_to_pc">Move to PC</string>
 </resources>

@@ -24,7 +24,12 @@ public partial class MainWindow
 {
 	void ShowDemo(string scene)
 	{
-		Height = scene == "pairing" ? 1010 : 740;
+		Height = scene switch
+		{
+			"pairing" => 1070,
+			"call" => 800,
+			_ => 740,
+		};
 		WindowStartupLocation = WindowStartupLocation.Manual;
 		Top = 0;
 		Left = 100;

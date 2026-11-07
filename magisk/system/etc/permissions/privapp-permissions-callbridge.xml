@@ -2,6 +2,7 @@
 <permissions>
 	<privapp-permissions package="dev.callbridge">
 		<permission name="android.permission.CAPTURE_AUDIO_OUTPUT" />
+		<permission name="android.permission.MODIFY_PHONE_STATE" />
 		<permission name="android.permission.CONNECTIVITY_USE_RESTRICTED_NETWORKS" />
 	</privapp-permissions>
 </permissions>

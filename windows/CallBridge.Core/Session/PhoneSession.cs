@@ -30,6 +30,8 @@ public sealed class PhoneSession : IDisposable
 
 	public event Action<IReadOnlyList<Contact>>? ContactsChanged;
 
+	public event Action<CallMode>? CallModeChanged;
+
 	public event Action? Closed;
 
 	public PhoneSession(TcpClient client)
@@ -97,6 +99,8 @@ public sealed class PhoneSession : IDisposable
 	public Task SendCommandAsync(string type, object? extra = null) =>
 		frames.WriteAsync(FrameType.Control, Json.Command(type, extra), cts.Token);
 
+	public Task SetCallModeAsync(CallMode mode) => SendCommandAsync("mode", new { Mode = mode });
+
 	public async Task RunAsync()
 	{
 		try
@@ -150,6 +154,13 @@ public sealed class PhoneSession : IDisposable
 				var items = root.TryGetProperty("items", out var array) ? array.Deserialize<List<Contact>>(Json.Options) : null;
 				if (items != null)
 					ContactsChanged?.Invoke(items);
+				break;
+			case "mode":
+				var mode = root.TryGetProperty("mode", out var m) ? m.GetString() : null;
+				if (mode == "pc")
+					CallModeChanged?.Invoke(CallMode.Pc);
+				else if (mode == "phone")
+					CallModeChanged?.Invoke(CallMode.Phone);
 				break;
 			case "audio":
 				var ok = root.TryGetProperty("route", out var r) && r.GetString() == "ok";

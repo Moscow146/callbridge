@@ -16,4 +16,8 @@
 	<string name="status_retry">Нет связи (%1$s), пробую снова</string>
 	<string name="status_outdated">Связь устарела, отсканируйте QR-код заново</string>
 	<string name="reason_unreachable">ПК не найден</string>
+	<string name="mode_on_pc">Звук на ПК ⇄</string>
+	<string name="mode_on_phone">Звук на телефоне ⇄</string>
+	<string name="mode_move_to_phone">Перевести на телефон</string>
+	<string name="mode_move_to_pc">Перевести на ПК</string>
 </resources>

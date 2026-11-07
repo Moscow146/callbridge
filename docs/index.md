@@ -4,7 +4,7 @@
 
 Take phone calls on your Windows PC: pick any mic and headphones, mute, and more. Android app plus a Windows `.exe`.
 
-The phone stays in your pocket. Its cellular call audio is streamed to the PC, so you hear the caller in the headphones you choose and talk into the microphone you choose. The phone itself stays silent during the call.
+The phone stays in your pocket. Its cellular call audio is streamed to the PC, so you hear the caller in the headphones you choose and talk into the microphone you choose. The phone's speaker and microphone stay silent during the call, and you can move a running call back to the phone at any time.
 
 ![Pairing](screenshots/windows-pairing.png){: width="220"}
 ![Incoming call](screenshots/windows-ringing.png){: width="220"}
