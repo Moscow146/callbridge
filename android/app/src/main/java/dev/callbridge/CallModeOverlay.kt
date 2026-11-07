@@ -7,6 +7,7 @@ import android.provider.Settings
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.ViewConfiguration
+import java.util.function.Consumer
 import android.view.WindowManager
 import android.widget.TextView
 import kotlin.math.abs
@@ -25,12 +26,24 @@ class CallModeOverlay(private val context: Context, private val onToggle: () -> 
 		y = (-35 * density).toInt()
 	}
 	private var pill: TextView? = null
+	private val blurListener = Consumer<Boolean> { applyMaterial() }
+
+	private fun applyMaterial() {
+		val view = pill ?: return
+		val glass = windows.isCrossWindowBlurEnabled
+		view.setBackgroundResource(if (glass) R.drawable.pill_glass else R.drawable.pill_solid)
+		layout.flags = if (glass) layout.flags or WindowManager.LayoutParams.FLAG_BLUR_BEHIND else layout.flags and WindowManager.LayoutParams.FLAG_BLUR_BEHIND.inv()
+		layout.blurBehindRadius = if (glass) (24 * density).toInt() else 0
+		if (view.isAttachedToWindow) windows.updateViewLayout(view, layout)
+	}
 
 	fun show(mode: String) {
 		if (!Settings.canDrawOverlays(context)) return
 		val view = pill ?: create().also {
 			windows.addView(it, layout)
 			pill = it
+			windows.addCrossWindowBlurEnabledListener(context.mainExecutor, blurListener)
+			applyMaterial()
 		}
 		view.setText(if (mode == CallMode.PC) R.string.mode_on_pc else R.string.mode_on_phone)
 		val action = context.getString(if (mode == CallMode.PC) R.string.mode_move_to_phone else R.string.mode_move_to_pc)
@@ -38,14 +51,17 @@ class CallModeOverlay(private val context: Context, private val onToggle: () -> 
 	}
 
 	fun hide() {
-		pill?.let { windows.removeView(it) }
+		pill?.let {
+			windows.removeCrossWindowBlurEnabledListener(blurListener)
+			windows.removeView(it)
+		}
 		pill = null
 	}
 
 	@SuppressLint("ClickableViewAccessibility")
 	private fun create(): TextView {
 		val view = TextView(context).apply {
-			setBackgroundResource(R.drawable.pill_overlay)
+			setBackgroundResource(R.drawable.pill_solid)
 			setTextColor(context.getColor(R.color.label))
 			textSize = 15f
 			gravity = Gravity.CENTER_VERTICAL
