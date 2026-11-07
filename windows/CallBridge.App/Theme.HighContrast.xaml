@@ -1,5 +1,6 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-					xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+					xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+					xmlns:sys="clr-namespace:System;assembly=System.Runtime">
 	<SolidColorBrush x:Key="WindowBg" Color="{x:Static SystemColors.WindowColor}"/>
 	<SolidColorBrush x:Key="Surface" Color="{x:Static SystemColors.WindowColor}"/>
 	<SolidColorBrush x:Key="Raised" Color="{x:Static SystemColors.WindowColor}"/>
@@ -21,4 +22,13 @@
 	<SolidColorBrush x:Key="Orange" Color="{x:Static SystemColors.WindowTextColor}"/>
 	<SolidColorBrush x:Key="Thumb" Color="{x:Static SystemColors.WindowTextColor}"/>
 	<SolidColorBrush x:Key="ThumbRim" Color="{x:Static SystemColors.WindowTextColor}"/>
+	<SolidColorBrush x:Key="GlassBar" Color="{x:Static SystemColors.WindowColor}"/>
+	<sys:Double x:Key="GlassBlurOpacity">0</sys:Double>
+	<SolidColorBrush x:Key="GlassSolid" Color="{x:Static SystemColors.WindowColor}"/>
+	<SolidColorBrush x:Key="GlassRim" Color="#00000000"/>
+	<SolidColorBrush x:Key="GlassRimMica" Color="#00000000"/>
+	<SolidColorBrush x:Key="GlassSheen" Color="#00000000"/>
+	<SolidColorBrush x:Key="GlassSheenMica" Color="#00000000"/>
+	<SolidColorBrush x:Key="SectionEdge" Color="{x:Static SystemColors.WindowTextColor}"/>
+	<SolidColorBrush x:Key="SectionEdgeMica" Color="{x:Static SystemColors.WindowTextColor}"/>
 </ResourceDictionary>

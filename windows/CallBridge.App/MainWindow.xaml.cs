@@ -34,6 +34,7 @@ public partial class MainWindow : Window
 	public MainWindow(string? demoScene = null)
 	{
 		InitializeComponent();
+		InitGlass();
 		demo = demoScene != null;
 		settings = demo ? new AppSettings { Persist = false, PairingCode = "0000000000000000" } : AppSettings.Load();
 		if (settings.PairingCode == null)
@@ -123,7 +124,7 @@ public partial class MainWindow : Window
 	protected override void OnSourceInitialized(EventArgs e)
 	{
 		base.OnSourceInitialized(e);
-		ThemeManager.StyleTitleBar(this);
+		ThemeManager.StyleWindow(this);
 	}
 
 	void ShowQr()

@@ -1,5 +1,6 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-					xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+					xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+					xmlns:sys="clr-namespace:System;assembly=System.Runtime">
 	<SolidColorBrush x:Key="WindowBg" Color="#FF131315"/>
 	<SolidColorBrush x:Key="Surface" Color="#FF1F1F21"/>
 	<SolidColorBrush x:Key="Raised" Color="#FF2C2C2E"/>
@@ -21,4 +22,20 @@
 	<SolidColorBrush x:Key="Orange" Color="#FFFFA056"/>
 	<SolidColorBrush x:Key="Thumb" Color="#FFFFFFFF"/>
 	<SolidColorBrush x:Key="ThumbRim" Color="#FF8E8E93"/>
+	<SolidColorBrush x:Key="GlassBar" Color="#6B1C1C1E"/>
+	<sys:Double x:Key="GlassBlurOpacity">0.45</sys:Double>
+	<SolidColorBrush x:Key="GlassSolid" Color="#FF131315"/>
+	<SolidColorBrush x:Key="GlassRim" Color="#00000000"/>
+	<LinearGradientBrush x:Key="GlassRimMica" StartPoint="0,0" EndPoint="0,1">
+		<GradientStop Color="#99FFFFFF" Offset="0"/>
+		<GradientStop Color="#33FFFFFF" Offset="0.45"/>
+		<GradientStop Color="#1FFFFFFF" Offset="1"/>
+	</LinearGradientBrush>
+	<SolidColorBrush x:Key="GlassSheen" Color="#00000000"/>
+	<LinearGradientBrush x:Key="GlassSheenMica" StartPoint="0,0" EndPoint="0,1">
+		<GradientStop Color="#1AFFFFFF" Offset="0"/>
+		<GradientStop Color="#00FFFFFF" Offset="0.6"/>
+	</LinearGradientBrush>
+	<SolidColorBrush x:Key="SectionEdge" Color="#00000000"/>
+	<SolidColorBrush x:Key="SectionEdgeMica" Color="#FF3F3F43"/>
 </ResourceDictionary>

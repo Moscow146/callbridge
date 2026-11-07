@@ -14,7 +14,9 @@ public partial class App : Application
 	{
 		base.OnStartup(e);
 		var themeIndex = Array.IndexOf(e.Args, "--theme");
-		ThemeManager.Start(themeIndex >= 0 && themeIndex + 1 < e.Args.Length ? e.Args[themeIndex + 1] : null);
+		var transparencyIndex = Array.IndexOf(e.Args, "--transparency");
+		bool? transparency = transparencyIndex >= 0 && transparencyIndex + 1 < e.Args.Length ? e.Args[transparencyIndex + 1] != "off" : null;
+		ThemeManager.Start(themeIndex >= 0 && themeIndex + 1 < e.Args.Length ? e.Args[themeIndex + 1] : null, transparency);
 		var demoIndex = Array.IndexOf(e.Args, "--demo");
 		if (demoIndex >= 0)
 		{
