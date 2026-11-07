@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Phone app: the header and the bottom panel are floating glass capsules with a gradient rim and a soft shadow, and the content scrolls under them, inspired by Apple materials. Without window blur they fall back to the solid surface colour.
+
 ## 0.3.0
 
 - New interface on the phone, the PC and the website, inspired by Apple's Human Interface Guidelines: system fonts, grouped sections, and no more animated blurred background.
