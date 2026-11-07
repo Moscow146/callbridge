@@ -1,6 +1,9 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 					xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 	<SolidColorBrush x:Key="WindowBg" Color="#FFF2F2F7"/>
+	<SolidColorBrush x:Key="GlassTint" Color="#EBF2F2F7"/>
+	<SolidColorBrush x:Key="GlassSolid" Color="#FFFFFFFF"/>
+	<SolidColorBrush x:Key="GlassBorder" Color="#FFD1D1D6"/>
 	<SolidColorBrush x:Key="Surface" Color="#FFFFFFFF"/>
 	<SolidColorBrush x:Key="Raised" Color="#FFFFFFFF"/>
 	<SolidColorBrush x:Key="Label" Color="#FF000000"/>

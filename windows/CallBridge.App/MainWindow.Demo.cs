@@ -31,6 +31,7 @@ public partial class MainWindow
 			"call" => 690,
 			_ => 660,
 		};
+		ShowActivated = false;
 		Topmost = true;
 		WindowStartupLocation = WindowStartupLocation.Manual;
 		Top = 0;

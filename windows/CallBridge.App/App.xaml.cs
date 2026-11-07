@@ -14,7 +14,7 @@ public partial class App : Application
 	{
 		base.OnStartup(e);
 		var themeIndex = Array.IndexOf(e.Args, "--theme");
-		ThemeManager.Start(themeIndex >= 0 && themeIndex + 1 < e.Args.Length ? e.Args[themeIndex + 1] : null);
+		ThemeManager.Start(themeIndex >= 0 && themeIndex + 1 < e.Args.Length ? e.Args[themeIndex + 1] : null, e.Args.Contains("--opaque"));
 		var demoIndex = Array.IndexOf(e.Args, "--demo");
 		if (demoIndex >= 0)
 		{

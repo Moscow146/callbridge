@@ -3,7 +3,7 @@
 		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 		xmlns:local="clr-namespace:CallBridge.App"
 		Title="CallBridge" Icon="Assets/app.ico" Width="420" Height="720" MinWidth="380" MinHeight="420"
-		Background="{DynamicResource WindowBg}" FontFamily="{StaticResource UiFont}" Foreground="{DynamicResource Label}"
+		Background="{DynamicResource WindowBackdrop}" FontFamily="{StaticResource UiFont}" Foreground="{DynamicResource Label}"
 		TextOptions.TextFormattingMode="Ideal" UseLayoutRounding="True" PreviewKeyDown="OnWindowKey">
 	<Window.Resources>
 		<Style x:Key="SuggestionItem" TargetType="ListBoxItem">
@@ -29,13 +29,23 @@
 		</Style>
 	</Window.Resources>
 
-	<ScrollViewer VerticalScrollBarVisibility="Auto" Focusable="False">
-		<StackPanel Margin="20,14,20,8" MaxWidth="560">
-			<StackPanel Orientation="Horizontal" Margin="16,0,16,14">
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="*"/>
+			<RowDefinition Height="Auto"/>
+		</Grid.RowDefinitions>
+
+		<Border x:Name="HeaderBar" Background="{DynamicResource GlassBar}" BorderBrush="{DynamicResource GlassBorder}" BorderThickness="0,0,0,1" Padding="36,12">
+			<StackPanel Orientation="Horizontal" MaxWidth="520" HorizontalAlignment="Center">
 				<Ellipse x:Name="StatusDot" Width="8" Height="8" Fill="{DynamicResource Orange}" VerticalAlignment="Center"/>
 				<TextBlock x:Name="StatusText" Text="{local:L WaitingPhone}" FontSize="13" Foreground="{DynamicResource LabelSecondary}" Margin="8,0,0,0" VerticalAlignment="Center"
 						   AutomationProperties.LiveSetting="Polite"/>
 			</StackPanel>
+		</Border>
+
+		<ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Focusable="False" Background="{DynamicResource WindowBg}">
+		<StackPanel Margin="20,16,20,8" MaxWidth="560">
 
 			<Border x:Name="QrCard" Style="{StaticResource Section}">
 				<StackPanel HorizontalAlignment="Center">
@@ -62,23 +72,6 @@
 					<TextBlock x:Name="CallSub" Text="{local:L WaitingCall}" Foreground="{DynamicResource LabelSecondary}" FontSize="14" TextAlignment="Center" Margin="0,2,0,0"/>
 					<TextBlock x:Name="RouteText" Foreground="{DynamicResource Red}" FontSize="13" TextAlignment="Center" TextWrapping="Wrap" Margin="0,8,0,0" Visibility="Collapsed"
 							   AutomationProperties.LiveSetting="Polite"/>
-
-					<StackPanel x:Name="RingingActions" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,18,0,2" Visibility="Collapsed">
-						<Button x:Name="RejectButton" Style="{StaticResource CallAction}" Tag="&#xE778;" Content="{local:L Decline}" Background="{DynamicResource RedFill}" Foreground="{DynamicResource OnFill}"
-								Width="84" Margin="0,0,28,0" Click="OnReject"/>
-						<Button x:Name="AnswerButton" Style="{StaticResource CallAction}" Tag="&#xE717;" Content="{local:L Accept}" Background="{DynamicResource GreenFill}" Foreground="{DynamicResource OnFill}"
-								Width="84" ToolTip="{local:L AcceptTip}" Click="OnAnswer"/>
-					</StackPanel>
-
-					<UniformGrid x:Name="CallActions" Rows="1" Margin="0,18,0,2" Visibility="Collapsed">
-						<ToggleButton x:Name="MuteButton" Style="{StaticResource CallToggle}" Tag="&#xE720;" local:CallActionGlyph.Checked="&#xEC54;" Content="{local:L MuteMic}"
-									  ToolTip="{local:L MuteTip}" Click="OnMuteClick"/>
-						<ToggleButton x:Name="DeafenButton" Style="{StaticResource CallToggle}" Tag="&#xE767;" local:CallActionGlyph.Checked="&#xE74F;" Content="{local:L MuteSound}"
-									  ToolTip="{local:L SoundTip}" Click="OnDeafenClick"/>
-						<Button x:Name="ModeButton" Style="{StaticResource CallAction}" Tag="&#xE8AB;" Content="{local:L ToPhone}" Click="OnModeClick"/>
-						<Button x:Name="HangupButton" Style="{StaticResource CallAction}" Tag="&#xE778;" Content="{local:L End}" Background="{DynamicResource RedFill}" Foreground="{DynamicResource OnFill}"
-								ToolTip="{local:L EndTip}" Click="OnHangup"/>
-					</UniformGrid>
 
 					<StackPanel x:Name="DialPanel" Margin="0,18,0,0">
 						<Grid>
@@ -154,5 +147,27 @@
 				</StackPanel>
 			</Border>
 		</StackPanel>
-	</ScrollViewer>
+		</ScrollViewer>
+
+		<Border x:Name="ActionBar" Grid.Row="2" Background="{DynamicResource GlassBar}" BorderBrush="{DynamicResource GlassBorder}" BorderThickness="0,1,0,0" Padding="20,14,20,10" Visibility="Collapsed">
+			<Grid MaxWidth="520">
+			<StackPanel x:Name="RingingActions" Orientation="Horizontal" HorizontalAlignment="Center" Visibility="Collapsed">
+				<Button x:Name="RejectButton" Style="{StaticResource CallAction}" Tag="&#xE778;" Content="{local:L Decline}" Background="{DynamicResource RedFill}" Foreground="{DynamicResource OnFill}"
+						Width="84" Margin="0,0,28,0" Click="OnReject"/>
+				<Button x:Name="AnswerButton" Style="{StaticResource CallAction}" Tag="&#xE717;" Content="{local:L Accept}" Background="{DynamicResource GreenFill}" Foreground="{DynamicResource OnFill}"
+						Width="84" ToolTip="{local:L AcceptTip}" Click="OnAnswer"/>
+			</StackPanel>
+
+			<UniformGrid x:Name="CallActions" Rows="1" Visibility="Collapsed">
+				<ToggleButton x:Name="MuteButton" Style="{StaticResource CallToggle}" Tag="&#xE720;" local:CallActionGlyph.Checked="&#xEC54;" Content="{local:L MuteMic}"
+							  ToolTip="{local:L MuteTip}" Click="OnMuteClick"/>
+				<ToggleButton x:Name="DeafenButton" Style="{StaticResource CallToggle}" Tag="&#xE767;" local:CallActionGlyph.Checked="&#xE74F;" Content="{local:L MuteSound}"
+							  ToolTip="{local:L SoundTip}" Click="OnDeafenClick"/>
+				<Button x:Name="ModeButton" Style="{StaticResource CallAction}" Tag="&#xE8AB;" Content="{local:L ToPhone}" Click="OnModeClick"/>
+				<Button x:Name="HangupButton" Style="{StaticResource CallAction}" Tag="&#xE778;" Content="{local:L End}" Background="{DynamicResource RedFill}" Foreground="{DynamicResource OnFill}"
+						ToolTip="{local:L EndTip}" Click="OnHangup"/>
+			</UniformGrid>
+			</Grid>
+		</Border>
+	</Grid>
 </Window>

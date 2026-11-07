@@ -20,6 +20,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="..\CallBridge.App\Theme.Light.xaml;..\CallBridge.App\Theme.Dark.xaml" CopyToOutputDirectory="PreserveNewest" LinkBase="Themes" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\CallBridge.Core\CallBridge.Core.csproj" />
   </ItemGroup>
 

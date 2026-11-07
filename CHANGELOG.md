@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+- PC app: the window uses the Windows 11 Mica material, and the header and the call buttons sit on a glass layer in the control layer only, inspired by Apple's materials. Cards, lists and text stay solid, and text on the glass keeps a contrast of at least 4.5:1 in light and dark.
+- PC app: on Windows 10, in high contrast, and when transparency effects are off in Windows settings, everything is solid. The app follows that setting while it runs.
+- The call buttons moved from the call card to a bar at the bottom of the window.
+
 ## 0.3.0
 
 - New interface on the phone, the PC and the website, inspired by Apple's Human Interface Guidelines: system fonts, grouped sections, and no more animated blurred background.

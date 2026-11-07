@@ -237,6 +237,7 @@ public partial class MainWindow : Window
 		ModeButton.Visibility = state.Call == CallState.Active ? Visibility.Visible : Visibility.Collapsed;
 		RingingActions.Visibility = ringing ? Visibility.Visible : Visibility.Collapsed;
 		CallActions.Visibility = state.Call is CallState.Active or CallState.Dialing or CallState.Held ? Visibility.Visible : Visibility.Collapsed;
+		ActionBar.Visibility = RingingActions.Visibility == Visibility.Visible || CallActions.Visibility == Visibility.Visible ? Visibility.Visible : Visibility.Collapsed;
 		DialPanel.Visibility = idle ? Visibility.Visible : Visibility.Collapsed;
 		var initials = idle ? "" : Initials(state.Name);
 		AvatarText.Text = initials;
