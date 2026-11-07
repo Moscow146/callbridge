@@ -13,7 +13,9 @@ import android.view.ViewGroup
 import android.view.WindowInsets
 import android.widget.Button
 import android.widget.ImageView
+import android.widget.ScrollView
 import android.widget.TextView
+import java.util.function.Consumer
 
 private val PERMISSIONS = arrayOf(
 	Manifest.permission.RECORD_AUDIO,
@@ -31,6 +33,10 @@ private const val KEY_ASKED = "asked_for_access"
 
 class MainActivity : Activity() {
 	private lateinit var content: ViewGroup
+	private lateinit var scroll: ScrollView
+	private lateinit var header: GlassBar
+	private lateinit var bottomBar: GlassBar
+	private val blurListener = Consumer<Boolean> { enabled -> applyBlur(enabled) }
 	private lateinit var badge: View
 	private lateinit var icon: ImageView
 	private lateinit var title: TextView
@@ -64,13 +70,36 @@ class MainActivity : Activity() {
 		accessOverlay = findViewById(R.id.access_overlay)
 		pairSection = findViewById(R.id.pair_section)
 		footer = findViewById(R.id.footer)
-		val top = content.paddingTop
-		val bottom = content.paddingBottom
-		val side = content.paddingLeft
-		content.setOnApplyWindowInsetsListener { view, insets ->
+		scroll = findViewById(R.id.scroll)
+		header = findViewById(R.id.header)
+		bottomBar = findViewById(R.id.bottom_bar)
+		val density = resources.displayMetrics.density
+		val barSide = bottomBar.paddingLeft
+		val barBottom = bottomBar.paddingBottom
+		header.source = scroll
+		header.edgeAtTop = false
+		header.amount = 0f
+		bottomBar.source = scroll
+		bottomBar.edgeAtTop = true
+		findViewById<View>(R.id.root).setOnApplyWindowInsetsListener { _, insets ->
 			val bars = insets.getInsets(WindowInsets.Type.systemBars() or WindowInsets.Type.displayCutout())
-			view.setPadding(side + bars.left, top + bars.top, side + bars.right, bottom + bars.bottom + (24 * resources.displayMetrics.density).toInt())
+			header.setPadding(bars.left, bars.top, bars.right, 0)
+			bottomBar.setPadding(barSide + bars.left, bottomBar.paddingTop, barSide + bars.right, barBottom + bars.bottom + (12 * density).toInt())
+			scroll.setPadding(bars.left, 0, bars.right, 0)
 			insets
+		}
+		val fitScroll = View.OnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
+			if (scroll.paddingTop != header.height || scroll.paddingBottom != bottomBar.height) {
+				scroll.setPadding(scroll.paddingLeft, header.height, scroll.paddingRight, bottomBar.height)
+			}
+			refreshGlass()
+		}
+		header.addOnLayoutChangeListener(fitScroll)
+		bottomBar.addOnLayoutChangeListener(fitScroll)
+		content.addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ -> refreshGlass() }
+		scroll.setOnScrollChangeListener { _, _, scrollY, _, _ ->
+			header.amount = scrollY / (16 * density)
+			refreshGlass()
 		}
 		primary.setOnClickListener {
 			when {
@@ -103,6 +132,18 @@ class MainActivity : Activity() {
 	override fun onStart() {
 		super.onStart()
 		BridgeState.observe(observer)
+		applyBlur(windowManager.isCrossWindowBlurEnabled)
+		windowManager.addCrossWindowBlurEnabledListener(mainExecutor, blurListener)
+	}
+
+	private fun applyBlur(enabled: Boolean) {
+		header.blurEnabled = enabled
+		bottomBar.blurEnabled = enabled
+	}
+
+	private fun refreshGlass() {
+		header.invalidateFor(400)
+		bottomBar.invalidateFor(400)
 	}
 
 	override fun onResume() {
@@ -113,6 +154,7 @@ class MainActivity : Activity() {
 
 	override fun onStop() {
 		BridgeState.unobserve(observer)
+		windowManager.removeCrossWindowBlurEnabledListener(blurListener)
 		super.onStop()
 	}
 
@@ -154,6 +196,7 @@ class MainActivity : Activity() {
 		accessSection.visibility = visibleIf(needsPhone || needsOverlay)
 		pairSection.visibility = visibleIf(pairing != null)
 		footer.visibility = visibleIf(pairing != null)
+		refreshGlass()
 	}
 
 	private fun visibleIf(condition: Boolean) = if (condition) View.VISIBLE else View.GONE
