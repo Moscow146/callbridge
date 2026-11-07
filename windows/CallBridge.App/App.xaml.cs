@@ -13,10 +13,12 @@ public partial class App : Application
 	protected override void OnStartup(StartupEventArgs e)
 	{
 		base.OnStartup(e);
+		var themeIndex = Array.IndexOf(e.Args, "--theme");
+		ThemeManager.Start(themeIndex >= 0 && themeIndex + 1 < e.Args.Length ? e.Args[themeIndex + 1] : null);
 		var demoIndex = Array.IndexOf(e.Args, "--demo");
 		if (demoIndex >= 0)
 		{
-			var scene = demoIndex + 1 < e.Args.Length ? e.Args[demoIndex + 1] : "idle";
+			var scene = demoIndex + 1 < e.Args.Length && !e.Args[demoIndex + 1].StartsWith("--") ? e.Args[demoIndex + 1] : "idle";
 			MainWindow = new MainWindow(scene);
 			MainWindow.Show();
 			return;

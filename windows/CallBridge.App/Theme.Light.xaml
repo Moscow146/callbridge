@@ -1,0 +1,24 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+					xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+	<SolidColorBrush x:Key="WindowBg" Color="#FFF2F2F7"/>
+	<SolidColorBrush x:Key="Surface" Color="#FFFFFFFF"/>
+	<SolidColorBrush x:Key="Raised" Color="#FFFFFFFF"/>
+	<SolidColorBrush x:Key="Label" Color="#FF000000"/>
+	<SolidColorBrush x:Key="LabelSecondary" Color="#FF5C5C63"/>
+	<SolidColorBrush x:Key="Placeholder" Color="#FF68686E"/>
+	<SolidColorBrush x:Key="Separator" Color="#FFD1D1D6"/>
+	<SolidColorBrush x:Key="Fill" Color="#FFECECF1"/>
+	<SolidColorBrush x:Key="FillHover" Color="#FFE3E3E9"/>
+	<SolidColorBrush x:Key="FillPressed" Color="#FFD6D6DD"/>
+	<SolidColorBrush x:Key="Selected" Color="#FF1E6EF4"/>
+	<SolidColorBrush x:Key="OnSelected" Color="#FFFFFFFF"/>
+	<SolidColorBrush x:Key="Accent" Color="#FF1E6EF4"/>
+	<SolidColorBrush x:Key="OnFill" Color="#FFFFFFFF"/>
+	<SolidColorBrush x:Key="GreenFill" Color="#FF008932"/>
+	<SolidColorBrush x:Key="RedFill" Color="#FFE9152D"/>
+	<SolidColorBrush x:Key="Green" Color="#FF008932"/>
+	<SolidColorBrush x:Key="Red" Color="#FFD3102A"/>
+	<SolidColorBrush x:Key="Orange" Color="#FFC55300"/>
+	<SolidColorBrush x:Key="Thumb" Color="#FFFFFFFF"/>
+	<SolidColorBrush x:Key="ThumbRim" Color="#FF9A9AA2"/>
+</ResourceDictionary>

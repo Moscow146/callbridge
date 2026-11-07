@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.3.0
+
+- New interface on the phone, the PC and the website, inspired by Apple's Human Interface Guidelines: system fonts, grouped sections, and no more animated blurred background.
+- The apps follow the system's light or dark appearance, and the PC app follows Windows high contrast too.
+- PC app: call buttons have text labels, the sliders and pickers work from the keyboard with a visible focus ring, and new shortcuts cover accepting, ending and muting a call.
+- Phone app: permissions are requested when you connect instead of at launch, and the screen says what is missing and why. The connection only starts once microphone access is allowed.
+- The QR scanner explains itself, has a Cancel button and offers Settings when camera access is off.
+- The floating call button has a spoken label and a standard click action for TalkBack.
+- CI can sign the APK with a permanent key when the repository has one, and the build workflow's default token is read-only.
+
+Reflash the Magisk module and reboot to update the phone app.
+
 ## 0.2.0
 
 - The phone's speaker and microphone are silenced during a call on the PC, using the audio HAL's `device_mute`. The old mute was silently refused by Android, so the call was heard on both devices.

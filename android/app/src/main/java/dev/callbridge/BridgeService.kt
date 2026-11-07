@@ -85,7 +85,7 @@ class BridgeService : Service(), BridgeConnection.Listener {
 			stopping = true
 			disconnect()
 			BridgeState.running = false
-			BridgeState.update(getString(R.string.status_disconnected))
+			BridgeState.update("")
 			syncCall()
 			stopForeground(STOP_FOREGROUND_REMOVE)
 			stopSelf()
@@ -161,7 +161,7 @@ class BridgeService : Service(), BridgeConnection.Listener {
 	}
 
 	override fun onConnected() {
-		BridgeState.update(getString(R.string.status_connected, pairing?.name), connected = true)
+		BridgeState.update(pairing?.name.orEmpty(), connected = true)
 		main.post {
 			sendState(lastCall, lastNumber)
 			syncCall()

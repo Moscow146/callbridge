@@ -1,12 +1,11 @@
 ﻿using System.IO;
 using System.Net.Sockets;
-using System.Runtime.InteropServices;
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Interop;
-using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
 using System.Windows.Threading;
 using CallBridge.Core.Audio;
 using CallBridge.Core.Protocol;
@@ -121,15 +120,10 @@ public partial class MainWindow : Window
 		tray?.Notify("CallBridge", Strings.Get("TrayStillRunning"));
 	}
 
-	[DllImport("dwmapi.dll")]
-	static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int value, int size);
-
 	protected override void OnSourceInitialized(EventArgs e)
 	{
 		base.OnSourceInitialized(e);
-		var handle = new WindowInteropHelper(this).Handle;
-		var dark = 1;
-		DwmSetWindowAttribute(handle, 20, ref dark, sizeof(int));
+		ThemeManager.StyleTitleBar(this);
 	}
 
 	void ShowQr()
@@ -171,8 +165,9 @@ public partial class MainWindow : Window
 		s.CallModeChanged += mode => Dispatcher.Invoke(() => ShowCallMode(mode));
 		s.AudioRouteChanged += reason => Dispatcher.Invoke(() => ShowRoute(reason == null ? null : Strings.Format("AudioUnavailable", reason)));
 		StatusText.Text = Strings.Format("ConnectedTo", s.DeviceName);
-		StatusDot.Fill = (Brush)FindResource("Green");
+		StatusDot.SetResourceReference(Shape.FillProperty, "Green");
 		QrCard.Visibility = Visibility.Collapsed;
+		CallCard.Visibility = Visibility.Visible;
 		DialButton.IsEnabled = true;
 		ApplyDevices();
 		s.MicGain = (float)MicGainSlider.Value;
@@ -184,8 +179,9 @@ public partial class MainWindow : Window
 	{
 		session = null;
 		StatusText.Text = Strings.Get("WaitingPhone");
-		StatusDot.Fill = (Brush)FindResource("Amber");
+		StatusDot.SetResourceReference(Shape.FillProperty, "Orange");
 		QrCard.Visibility = Visibility.Visible;
+		CallCard.Visibility = Visibility.Collapsed;
 		DialButton.IsEnabled = false;
 		callMode = CallMode.Pc;
 		ShowState(new PhoneState(CallState.Idle, null, null));
@@ -234,11 +230,49 @@ public partial class MainWindow : Window
 		var ringing = state.Call == CallState.Ringing;
 		if (ringing && !ringingAgain && (!IsVisible || !IsActive))
 			tray?.Notify(Strings.Get("IncomingCall"), who);
-		ModeButton.Content = Strings.Get(callMode == CallMode.Phone ? "MoveToPc" : "MoveToPhone");
+		var moveLabel = Strings.Get(callMode == CallMode.Phone ? "MoveToPc" : "MoveToPhone");
+		ModeButton.Content = Strings.Get(callMode == CallMode.Phone ? "ToPc" : "ToPhone");
+		ModeButton.ToolTip = moveLabel;
+		AutomationProperties.SetName(ModeButton, moveLabel);
 		ModeButton.Visibility = state.Call == CallState.Active ? Visibility.Visible : Visibility.Collapsed;
-		AnswerButton.Visibility = ringing ? Visibility.Visible : Visibility.Collapsed;
-		RejectButton.Visibility = ringing ? Visibility.Visible : Visibility.Collapsed;
-		HangupButton.Visibility = state.Call is CallState.Active or CallState.Dialing or CallState.Held ? Visibility.Visible : Visibility.Collapsed;
+		RingingActions.Visibility = ringing ? Visibility.Visible : Visibility.Collapsed;
+		CallActions.Visibility = state.Call is CallState.Active or CallState.Dialing or CallState.Held ? Visibility.Visible : Visibility.Collapsed;
+		DialPanel.Visibility = idle ? Visibility.Visible : Visibility.Collapsed;
+		var initials = idle ? "" : Initials(state.Name);
+		AvatarText.Text = initials;
+		AvatarGlyph.Visibility = initials.Length == 0 ? Visibility.Visible : Visibility.Collapsed;
+	}
+
+	static string Initials(string? name)
+	{
+		var words = (name ?? "").Split(' ', StringSplitOptions.RemoveEmptyEntries);
+		return string.Concat(words.Take(2).Select(w => char.ToUpperInvariant(w[0])));
+	}
+
+	void OnWindowKey(object sender, KeyEventArgs e)
+	{
+		if (Keyboard.Modifiers != ModifierKeys.Control)
+			return;
+		switch (e.Key)
+		{
+			case Key.M:
+				MuteButton.IsChecked = MuteButton.IsChecked != true;
+				OnMuteClick(sender, e);
+				break;
+			case Key.D:
+				DeafenButton.IsChecked = DeafenButton.IsChecked != true;
+				OnDeafenClick(sender, e);
+				break;
+			case Key.Enter when RingingActions.IsVisible:
+				OnAnswer(sender, e);
+				break;
+			case Key.E when CallActions.IsVisible:
+				OnHangup(sender, e);
+				break;
+			default:
+				return;
+		}
+		e.Handled = true;
 	}
 
 	void OnDeviceChanged(object sender, SelectionChangedEventArgs e)

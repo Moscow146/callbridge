@@ -10,14 +10,26 @@ android {
 		applicationId = "dev.callbridge"
 		minSdk = 31
 		targetSdk = 35
-		versionCode = 3
-		versionName = "0.2.0"
+		versionCode = 4
+		versionName = "0.3.0"
+	}
+
+	signingConfigs {
+		System.getenv("CALLBRIDGE_KEYSTORE")?.let { keystore ->
+			create("permanent") {
+				storeFile = file(keystore)
+				storeType = "PKCS12"
+				storePassword = System.getenv("CALLBRIDGE_KEYSTORE_PASSWORD")
+				keyAlias = "callbridge"
+				keyPassword = System.getenv("CALLBRIDGE_KEYSTORE_PASSWORD")
+			}
+		}
 	}
 
 	buildTypes {
 		release {
 			isMinifyEnabled = false
-			signingConfig = signingConfigs.getByName("debug")
+			signingConfig = signingConfigs.findByName("permanent") ?: signingConfigs.getByName("debug")
 		}
 	}
 

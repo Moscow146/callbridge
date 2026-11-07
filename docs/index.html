@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+	<title>CallBridge: phone calls on your Windows PC</title>
+	<meta name="description" content="Answer and make your phone's calls on a Windows PC with the microphone and headphones you choose. The phone stays silent.">
+	<meta name="color-scheme" content="light dark">
+	<meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
+	<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000000">
+	<meta property="og:title" content="CallBridge">
+	<meta property="og:description" content="Phone calls on your Windows PC, with the phone silent in your pocket.">
+	<meta property="og:image" content="https://moscow146.github.io/callbridge/screenshots/windows-call.png">
+	<link rel="icon" href="icon.png">
+	<link rel="stylesheet" href="assets/site.css">
+</head>
+<body>
+	<a class="skip" href="#main">Skip to content</a>
+
+	<header class="site-header">
+		<div class="wrap">
+			<a class="brand" href="./"><img src="icon.png" width="28" height="28" alt=""> CallBridge</a>
+			<nav class="site-nav" aria-label="Main">
+				<a href="#setup">Setup</a>
+				<a href="#requirements">Requirements</a>
+				<a href="https://github.com/Moscow146/callbridge">GitHub</a>
+			</nav>
+		</div>
+	</header>
+
+	<main id="main">
+		<div class="wrap hero">
+			<div>
+				<h1>Phone calls, on your&nbsp;PC.</h1>
+				<p class="lead">Hear callers in the headphones you choose and talk into the microphone you choose. The phone stays silent in your pocket.</p>
+				<div class="actions">
+					<a class="button primary" href="https://github.com/Moscow146/callbridge/releases/latest">Download</a>
+					<a class="button" href="#setup">How to set it up</a>
+				</div>
+				<p class="meta">Free and open source. For Windows 10 or 11 and rooted Android 12+.</p>
+			</div>
+			<div class="hero-shots">
+				<picture>
+					<source srcset="screenshots/windows-call-dark.png" media="(prefers-color-scheme: dark)">
+					<img class="shot" src="screenshots/windows-call.png" width="404" height="681" alt="The CallBridge window during a call with Anna Smith, with buttons to mute, turn off sound, move the call to the phone and end it.">
+				</picture>
+				<picture>
+					<source srcset="screenshots/android-connected-dark.png" media="(prefers-color-scheme: dark)">
+					<img class="shot" src="screenshots/android-connected.png" width="610" height="780" alt="The CallBridge phone app showing it is connected to the PC.">
+				</picture>
+			</div>
+		</div>
+
+		<section class="tinted" aria-labelledby="features-title">
+			<div class="wrap">
+				<h2 id="features-title">Everything happens on the PC</h2>
+				<ul class="features">
+					<li>
+						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6.5 9H3v6h3.5L11 19z"/><path d="m16 9.5 5 5m0-5-5 5"/></svg>
+						<h3>A silent phone</h3>
+						<p>The phone’s speaker and microphone stay off while the call runs on the PC.</p>
+					</li>
+					<li>
+						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="3" y="14" width="4" height="6" rx="1.5"/><rect x="17" y="14" width="4" height="6" rx="1.5"/></svg>
+						<h3>Any microphone and headphones</h3>
+						<p>Choose the devices in the Windows app, and change them even during a call.</p>
+					</li>
+					<li>
+						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3l4 4-4 4"/><path d="M21 7H8"/><path d="M7 21l-4-4 4-4"/><path d="M3 17h13"/></svg>
+						<h3>Move a call at any time</h3>
+						<p>Switch a running call between the PC and the phone from either device.</p>
+					</li>
+					<li>
+						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="6" width="19" height="12" rx="2"/><path d="M6.5 10h.01M10 10h.01M13.5 10h.01M17.5 10h.01M8 14h8"/></svg>
+						<h3>Calls from the keyboard</h3>
+						<p>Type a name or a number, choose a contact and press Enter. Shortcuts cover mute and hanging up.</p>
+					</li>
+					<li>
+						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 9a15 15 0 0 1 19 0"/><path d="M6 12.800a10 10 0 0 1 12 0"/><path d="M9.5 16.5a5 5 0 0 1 5 0"/><path d="M12 20h.01"/></svg>
+						<h3>Stays on your own network</h3>
+						<p>The phone connects straight to the PC over Wi-Fi or USB. There’s no account and no cloud service.</p>
+					</li>
+					<li>
+						<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9a6 6 0 0 1 12 0c0 6 2.5 7 2.5 7h-17S6 15 6 9z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>
+						<h3>Out of the way until it rings</h3>
+						<p>CallBridge waits in the tray and shows a notification when a call comes in.</p>
+					</li>
+				</ul>
+			</div>
+		</section>
+
+		<section aria-labelledby="gallery-title">
+			<div class="wrap">
+				<h2 id="gallery-title">A closer look</h2>
+				<p class="section-lead">The apps follow the light or dark appearance you already chose for your system.</p>
+				<div class="gallery">
+					<figure>
+						<picture>
+							<source srcset="screenshots/windows-ringing-dark.png" media="(prefers-color-scheme: dark)">
+							<img class="shot" loading="lazy" src="screenshots/windows-ringing.png" width="404" height="681" alt="An incoming call from Anna Smith with Decline and Accept buttons.">
+						</picture>
+						<figcaption>Answer from the PC</figcaption>
+					</figure>
+					<figure>
+						<picture>
+							<source srcset="screenshots/windows-suggest-dark.png" media="(prefers-color-scheme: dark)">
+							<img class="shot" loading="lazy" src="screenshots/windows-suggest.png" width="404" height="651" alt="The call field with a list of matching contacts below it.">
+						</picture>
+						<figcaption>Call your contacts</figcaption>
+					</figure>
+					<figure>
+						<picture>
+							<source srcset="screenshots/windows-pairing-dark.png" media="(prefers-color-scheme: dark)">
+							<img class="shot" loading="lazy" src="screenshots/windows-pairing.png" width="404" height="821" alt="A QR code to scan with the phone, above the microphone and sound output settings.">
+						</picture>
+						<figcaption>Pair with a QR code</figcaption>
+					</figure>
+				</div>
+			</div>
+		</section>
+
+		<section id="setup" class="tinted" aria-labelledby="setup-title">
+			<div class="wrap">
+				<h2 id="setup-title">Set up in three steps</h2>
+				<ol class="steps">
+					<li>
+						<h3>Install on the phone</h3>
+						<p>Flash <code>callbridge-magisk.zip</code> in the Magisk app, then restart the phone.</p>
+					</li>
+					<li>
+						<h3>Start on the PC</h3>
+						<p>Open <code>CallBridge.exe</code>. It needs no installation and shows a QR code.</p>
+					</li>
+					<li>
+						<h3>Scan the code</h3>
+						<p>Open CallBridge on the phone and tap Scan QR code. Next time, just tap Connect.</p>
+					</li>
+				</ol>
+				<div class="actions">
+					<a class="button primary" href="https://github.com/Moscow146/callbridge/releases/latest">Download the latest release</a>
+					<a class="button" href="https://github.com/Moscow146/callbridge#use">Read the full guide</a>
+				</div>
+			</div>
+		</section>
+
+		<section id="requirements" aria-labelledby="requirements-title">
+			<div class="wrap">
+				<h2 id="requirements-title">Requirements</h2>
+				<dl class="requirements">
+					<div>
+						<dt>Phone</dt>
+						<dd>Android 12 or later with root (Magisk). Tested on a Redmi K50 Ultra with HyperOS 3.</dd>
+					</div>
+					<div>
+						<dt>PC</dt>
+						<dd>Windows 10 or 11, on the same network as the phone or connected by USB.</dd>
+					</div>
+				</dl>
+				<p class="note">Keep Bluetooth headsets disconnected from the phone during calls on the PC. Android can’t mute a Bluetooth headset’s microphone, so it would stay live in the call.</p>
+			</div>
+		</section>
+	</main>
+
+	<footer class="site-footer">
+		<div class="wrap">
+			<span>CallBridge is open source under the MIT License.</span>
+			<nav aria-label="More">
+				<a href="https://github.com/Moscow146/callbridge">Source code</a>
+				<a href="PROTOCOL.html">Protocol</a>
+				<a href="https://github.com/Moscow146/callbridge/discussions">Questions</a>
+			</nav>
+		</div>
+	</footer>
+</body>
+</html>

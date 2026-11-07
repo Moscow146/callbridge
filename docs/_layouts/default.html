@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+	<title>{{ page.title | default: site.title }}</title>
+	<meta name="description" content="{{ site.description }}">
+	<meta name="color-scheme" content="light dark">
+	<link rel="icon" href="{{ '/icon.png' | relative_url }}">
+	<link rel="stylesheet" href="{{ '/assets/site.css' | relative_url }}">
+</head>
+<body>
+	<a class="skip" href="#main">Skip to content</a>
+
+	<header class="site-header">
+		<div class="wrap">
+			<a class="brand" href="{{ '/' | relative_url }}"><img src="{{ '/icon.png' | relative_url }}" width="28" height="28" alt=""> CallBridge</a>
+			<nav class="site-nav" aria-label="Main">
+				<a href="{{ '/' | relative_url }}#setup">Setup</a>
+				<a href="https://github.com/Moscow146/callbridge">GitHub</a>
+			</nav>
+		</div>
+	</header>
+
+	<main id="main" class="prose">
+		{{ content }}
+	</main>
+
+	<footer class="site-footer">
+		<div class="wrap">
+			<span>CallBridge is open source under the MIT License.</span>
+			<nav aria-label="More">
+				<a href="https://github.com/Moscow146/callbridge">Source code</a>
+				<a href="https://github.com/Moscow146/callbridge/discussions">Questions</a>
+			</nav>
+		</div>
+	</footer>
+</body>
+</html>

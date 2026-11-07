@@ -4,17 +4,15 @@ import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.animation.ObjectAnimator
-import android.animation.ValueAnimator
-import android.graphics.RenderEffect
-import android.graphics.Shader
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
+import android.transition.TransitionManager
 import android.view.View
+import android.view.ViewGroup
 import android.view.WindowInsets
-import android.view.animation.AccelerateDecelerateInterpolator
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.TextView
 
 private val PERMISSIONS = arrayOf(
@@ -27,61 +25,90 @@ private val PERMISSIONS = arrayOf(
 	Manifest.permission.POST_NOTIFICATIONS,
 )
 
+private const val REQUEST_ACCESS = 1
 private const val REQUEST_SCAN = 2
+private const val KEY_ASKED = "asked_for_access"
 
 class MainActivity : Activity() {
-	private lateinit var pcName: TextView
-	private lateinit var toggle: Button
-	private lateinit var scan: Button
-	private lateinit var status: TextView
+	private lateinit var content: ViewGroup
+	private lateinit var badge: View
+	private lateinit var icon: ImageView
+	private lateinit var title: TextView
+	private lateinit var detail: TextView
+	private lateinit var primary: Button
+	private lateinit var accessHeader: View
+	private lateinit var accessSection: View
+	private lateinit var accessPhone: View
+	private lateinit var accessDivider: View
+	private lateinit var accessOverlay: View
+	private lateinit var pairSection: View
+	private lateinit var footer: View
 	private val store by lazy { PairingStore(this) }
-	private lateinit var pill: TextView
-	private val observer: (String) -> Unit = { text ->
-		status.text = text.ifEmpty { getString(R.string.status_disconnected) }
-		renderToggle()
-		pill.setText(
-			when {
-				BridgeState.connected -> R.string.pill_connected
-				BridgeState.running -> R.string.pill_connecting
-				else -> R.string.pill_offline
-			}
-		)
-	}
+	private val prefs by lazy { getPreferences(MODE_PRIVATE) }
+	private var startWhenAllowed = false
+	private val observer: (String) -> Unit = { render() }
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 		setContentView(R.layout.activity_main)
-		pcName = findViewById(R.id.pc_name)
-		toggle = findViewById(R.id.toggle)
-		scan = findViewById(R.id.scan)
-		status = findViewById(R.id.status)
-		pill = findViewById(R.id.pill)
-		setupGlass()
-		toggle.setOnClickListener { if (BridgeState.running) stopBridge() else startBridge() }
-		scan.setOnClickListener { startActivityForResult(Intent(this, ScanActivity::class.java), REQUEST_SCAN) }
-		val missing = PERMISSIONS.filter { checkSelfPermission(it) != PackageManager.PERMISSION_GRANTED }
-		if (missing.isNotEmpty()) requestPermissions(missing.toTypedArray(), 1)
-		if (!Settings.canDrawOverlays(this)) {
+		content = findViewById(R.id.content)
+		badge = findViewById(R.id.status_badge)
+		icon = findViewById(R.id.status_icon)
+		title = findViewById(R.id.title)
+		detail = findViewById(R.id.detail)
+		primary = findViewById(R.id.primary)
+		accessHeader = findViewById(R.id.access_header)
+		accessSection = findViewById(R.id.access_section)
+		accessPhone = findViewById(R.id.access_phone)
+		accessDivider = findViewById(R.id.access_divider)
+		accessOverlay = findViewById(R.id.access_overlay)
+		pairSection = findViewById(R.id.pair_section)
+		footer = findViewById(R.id.footer)
+		val top = content.paddingTop
+		val bottom = content.paddingBottom
+		val side = content.paddingLeft
+		content.setOnApplyWindowInsetsListener { view, insets ->
+			val bars = insets.getInsets(WindowInsets.Type.systemBars() or WindowInsets.Type.displayCutout())
+			view.setPadding(side + bars.left, top + bars.top, side + bars.right, bottom + bars.bottom + (24 * resources.displayMetrics.density).toInt())
+			insets
+		}
+		primary.setOnClickListener {
+			when {
+				store.load() == null -> scan()
+				BridgeState.running -> stopBridge()
+				else -> startBridge()
+			}
+		}
+		findViewById<View>(R.id.pair_other).setOnClickListener { scan() }
+		accessPhone.setOnClickListener { requestAccess() }
+		accessOverlay.setOnClickListener {
 			startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName")))
 		}
 		acceptDeepLink(intent)
-		refresh()
 	}
 
 	override fun onNewIntent(intent: Intent) {
 		super.onNewIntent(intent)
 		acceptDeepLink(intent)
-		refresh()
+		render()
 	}
 
 	override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
 		super.onRequestPermissionsResult(requestCode, permissions, grantResults)
 		if (BridgeState.running) startService(Intent(this, BridgeService::class.java).setAction(BridgeService.ACTION_CONTACTS))
+		startIfAllowed()
+		render()
 	}
 
 	override fun onStart() {
 		super.onStart()
 		BridgeState.observe(observer)
+	}
+
+	override fun onResume() {
+		super.onResume()
+		startIfAllowed()
+		render()
 	}
 
 	override fun onStop() {
@@ -92,42 +119,60 @@ class MainActivity : Activity() {
 	@Deprecated("Deprecated in Java")
 	override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
 		super.onActivityResult(requestCode, resultCode, data)
-		if (requestCode == REQUEST_SCAN && resultCode == RESULT_OK) {
-			refresh()
-			startBridge()
-		}
+		if (requestCode == REQUEST_SCAN && resultCode == RESULT_OK) startBridge()
 	}
 
-	private fun setupGlass() {
-		val density = resources.displayMetrics.density
-		val content = findViewById<View>(R.id.content)
-		val basePadding = content.paddingLeft
-		content.setOnApplyWindowInsetsListener { view, insets ->
-			val bars = insets.getInsets(WindowInsets.Type.systemBars())
-			view.setPadding(basePadding + bars.left, basePadding + bars.top, basePadding + bars.right, basePadding + bars.bottom)
-			insets
+	private fun render() {
+		val pairing = store.load()
+		val running = BridgeState.running
+		TransitionManager.beginDelayedTransition(content)
+		val (tint, glyph, heading) = when {
+			pairing == null -> Triple(R.color.accent, R.drawable.ic_qr, R.string.title_unpaired)
+			BridgeState.connected -> Triple(R.color.green, R.drawable.ic_check, R.string.title_connected)
+			running -> Triple(R.color.orange, R.drawable.ic_sync, R.string.title_connecting)
+			else -> Triple(R.color.gray, R.drawable.ic_close, R.string.title_disconnected)
 		}
-		findViewById<View>(R.id.orbs).setRenderEffect(RenderEffect.createBlurEffect(90 * density, 90 * density, Shader.TileMode.CLAMP))
-		drift(R.id.orb_blue, 90f * density, 120f * density, 14000)
-		drift(R.id.orb_pink, -100f * density, -110f * density, 18000)
-		drift(R.id.orb_teal, 80f * density, -90f * density, 21000)
+		badge.backgroundTintList = getColorStateList(tint)
+		icon.setImageResource(glyph)
+		title.setText(heading)
+		detail.text = if (pairing == null) getString(R.string.hint_unpaired) else BridgeState.status.ifEmpty { pairing.name }
+		primary.setText(
+			when {
+				pairing == null -> R.string.scan_qr
+				running -> R.string.disconnect
+				else -> R.string.connect
+			}
+		)
+		primary.setBackgroundResource(if (pairing != null && running) R.drawable.btn_secondary else R.drawable.btn_primary)
+		primary.setTextColor(getColor(if (pairing != null && running) R.color.red_text else R.color.on_fill))
+		val needsPhone = pairing != null && missingPermissions().isNotEmpty()
+		val needsOverlay = pairing != null && !Settings.canDrawOverlays(this)
+		accessPhone.visibility = visibleIf(needsPhone)
+		accessOverlay.visibility = visibleIf(needsOverlay)
+		accessDivider.visibility = visibleIf(needsPhone && needsOverlay)
+		accessHeader.visibility = visibleIf(needsPhone || needsOverlay)
+		accessSection.visibility = visibleIf(needsPhone || needsOverlay)
+		pairSection.visibility = visibleIf(pairing != null)
+		footer.visibility = visibleIf(pairing != null)
 	}
 
-	private fun drift(id: Int, dx: Float, dy: Float, duration: Long) {
-		val orb = findViewById<View>(id)
-		for ((property, distance) in listOf("translationX" to dx, "translationY" to dy)) {
-			ObjectAnimator.ofFloat(orb, property, 0f, distance).apply {
-				this.duration = duration
-				repeatCount = ValueAnimator.INFINITE
-				repeatMode = ValueAnimator.REVERSE
-				interpolator = AccelerateDecelerateInterpolator()
-			}.start()
+	private fun visibleIf(condition: Boolean) = if (condition) View.VISIBLE else View.GONE
+
+	private fun missingPermissions() = PERMISSIONS.filter { checkSelfPermission(it) != PackageManager.PERMISSION_GRANTED }
+
+	private fun requestAccess() {
+		val missing = missingPermissions()
+		if (missing.isEmpty()) return
+		if (prefs.getBoolean(KEY_ASKED, false) && missing.none(::shouldShowRequestPermissionRationale)) {
+			startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$packageName")))
+			return
 		}
+		prefs.edit().putBoolean(KEY_ASKED, true).apply()
+		requestPermissions(missing.toTypedArray(), REQUEST_ACCESS)
 	}
 
-	private fun renderToggle() {
-		toggle.setText(if (BridgeState.running) R.string.disconnect else R.string.connect)
-		toggle.setBackgroundResource(if (BridgeState.running) R.drawable.btn_red else R.drawable.btn_green)
+	private fun scan() {
+		startActivityForResult(Intent(this, ScanActivity::class.java), REQUEST_SCAN)
 	}
 
 	private fun acceptDeepLink(intent: Intent) {
@@ -137,21 +182,30 @@ class MainActivity : Activity() {
 		startBridge()
 	}
 
-	private fun refresh() {
-		val pairing = store.load()
-		pcName.text = pairing?.let { getString(R.string.paired_with, it.name) } ?: getString(R.string.not_paired)
-		toggle.visibility = if (pairing == null) View.GONE else View.VISIBLE
-		scan.setText(if (pairing == null) R.string.scan_qr else R.string.pair_other)
-	}
+	private fun microphoneAllowed() = checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED
 
 	private fun startBridge() {
 		if (store.load() == null) return
+		if (microphoneAllowed() && (missingPermissions().isEmpty() || prefs.getBoolean(KEY_ASKED, false))) {
+			launchService()
+		} else {
+			startWhenAllowed = true
+			requestAccess()
+		}
+	}
+
+	private fun startIfAllowed() {
+		if (startWhenAllowed && microphoneAllowed()) {
+			startWhenAllowed = false
+			launchService()
+		}
+	}
+
+	private fun launchService() {
 		startForegroundService(Intent(this, BridgeService::class.java))
-		toggle.setText(R.string.disconnect)
 	}
 
 	private fun stopBridge() {
 		startService(Intent(this, BridgeService::class.java).setAction(BridgeService.ACTION_STOP))
-		toggle.setText(R.string.connect)
 	}
 }

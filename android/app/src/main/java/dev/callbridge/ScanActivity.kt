@@ -1,8 +1,14 @@
 package dev.callbridge
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Bundle
+import android.provider.Settings
+import android.view.View
+import android.view.WindowInsets
+import android.widget.TextView
 import androidx.activity.ComponentActivity
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
@@ -27,22 +33,52 @@ class ScanActivity : ComponentActivity() {
 		setHints(mapOf(DecodeHintType.POSSIBLE_FORMATS to listOf(BarcodeFormat.QR_CODE)))
 	}
 	@Volatile private var done = false
+	private var cameraStarted = false
 	private lateinit var preview: PreviewView
+	private lateinit var hint: TextView
+	private lateinit var openSettings: View
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
-		preview = PreviewView(this)
-		setContentView(preview)
-		if (checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
-			startCamera()
-		} else {
-			requestPermissions(arrayOf(Manifest.permission.CAMERA), 1)
+		setContentView(R.layout.activity_scan)
+		preview = findViewById(R.id.preview)
+		hint = findViewById(R.id.hint)
+		openSettings = findViewById(R.id.open_settings)
+		findViewById<View>(R.id.cancel).setOnClickListener { finish() }
+		openSettings.setOnClickListener {
+			startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$packageName")))
 		}
+		findViewById<View>(R.id.root).setOnApplyWindowInsetsListener { view, insets ->
+			val bars = insets.getInsets(WindowInsets.Type.systemBars() or WindowInsets.Type.displayCutout())
+			view.setPadding(bars.left, bars.top, bars.right, bars.bottom)
+			insets
+		}
+		if (cameraAllowed()) showCamera() else requestPermissions(arrayOf(Manifest.permission.CAMERA), 1)
+	}
+
+	override fun onResume() {
+		super.onResume()
+		if (cameraAllowed()) showCamera()
 	}
 
 	override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<String>, grantResults: IntArray) {
 		super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-		if (grantResults.firstOrNull() == PackageManager.PERMISSION_GRANTED) startCamera() else finish()
+		if (grantResults.firstOrNull() == PackageManager.PERMISSION_GRANTED) {
+			showCamera()
+		} else {
+			hint.setText(R.string.scan_no_camera)
+			openSettings.visibility = View.VISIBLE
+		}
+	}
+
+	private fun cameraAllowed() = checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED
+
+	private fun showCamera() {
+		hint.setText(R.string.scan_hint)
+		openSettings.visibility = View.GONE
+		if (cameraStarted) return
+		cameraStarted = true
+		startCamera()
 	}
 
 	private fun startCamera() {
