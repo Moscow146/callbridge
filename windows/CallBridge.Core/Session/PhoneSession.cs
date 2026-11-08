@@ -17,6 +17,7 @@ public sealed class PhoneSession : IDisposable
 	SpeakerPlayer? speaker;
 	MicCapture? mic;
 	volatile EchoCanceller? echo;
+	long lastReceivedMs;
 
 	public string DeviceName { get; private set; } = "";
 
@@ -127,6 +128,7 @@ public sealed class PhoneSession : IDisposable
 
 	public async Task RunAsync()
 	{
+		Volatile.Write(ref lastReceivedMs, (long)clock.Elapsed.TotalMilliseconds);
 		_ = PingLoopAsync();
 		try
 		{
@@ -135,6 +137,7 @@ public sealed class PhoneSession : IDisposable
 				var frame = await frames.ReadAsync(cts.Token);
 				if (frame == null)
 					break;
+				Volatile.Write(ref lastReceivedMs, (long)clock.Elapsed.TotalMilliseconds);
 				Handle(frame.Value);
 			}
 		}
@@ -156,6 +159,11 @@ public sealed class PhoneSession : IDisposable
 				var stamp = BitConverter.GetBytes(clock.Elapsed.Ticks);
 				await frames.WriteAsync(FrameType.Ping, stamp, cts.Token);
 				await Task.Delay(PingIntervalMs, cts.Token);
+				if (clock.Elapsed.TotalMilliseconds - Volatile.Read(ref lastReceivedMs) > IdleTimeoutMs)
+				{
+					cts.Cancel();
+					client.Close();
+				}
 			}
 		}
 		catch (Exception e) when (e is IOException or OperationCanceledException or ObjectDisposedException or SocketException)
@@ -164,6 +172,8 @@ public sealed class PhoneSession : IDisposable
 	}
 
 	public int PingIntervalMs { get; set; } = 2000;
+
+	public int IdleTimeoutMs { get; set; } = 9000;
 
 	void Handle(Frame frame)
 	{

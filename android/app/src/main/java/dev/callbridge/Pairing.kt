@@ -36,4 +36,10 @@ class PairingStore(context: Context) {
 		if (hosts.isEmpty() || code == null) return null
 		return Pairing(hosts, prefs.getInt("port", DEFAULT_PORT), code, prefs.getString("name", null) ?: hosts.first())
 	}
+
+	var autostart: Boolean
+		get() = prefs.getBoolean("autostart", false)
+		set(value) {
+			prefs.edit().putBoolean("autostart", value).apply()
+		}
 }
