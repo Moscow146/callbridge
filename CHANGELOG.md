@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Phone app: the log (`adb logcat -s CallBridge`) now shows which networks are up and whether the bridge socket is bound to Wi-Fi, and docs/NETWORK-CHECK.md has the steps for checking calls over Wi-Fi with a VPN.
 - Hold and a keypad for DTMF tones in the PC window, with matching `hold` and `dtmf` control messages. The phone app now registers a non-UI in-call service for them, so reflash the Magisk module (it adds the `CONTROL_INCALL_EXPERIENCE` permission) and reboot.
 - PC app: the status bar shows the estimated audio delay, jitter and late frames during a call. The PC pings the phone every two seconds to measure the round trip, and a summary line (delay, round trip, jitter, late frames, buffer trims) is written to `%APPDATA%\CallBridgeudio.log` every five seconds.
 - PC app: optional echo cancellation for the microphone (a checkbox under Microphone, off by default). It subtracts the phone's voice, as played on the PC speakers, from the microphone with an adaptive filter, so the caller hears less of themselves when you use speakers instead of headphones. Headphones are still the best fix.
