@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- The call card and the dial suggestions show the contact's photo instead of initials when the phone has one; contacts without a photo keep the initials. The phone sends a 96x96 JPEG thumbnail on request (new `photo` control message, see docs/PROTOCOL.md), the PC asks only for the contacts it shows and caches the photos in memory and in `%APPDATA%\CallBridge\photos` (at most 2000 files, 32 MB).
+
 ## 0.5.1
 
 - Magisk module: on Xiaomi/HyperOS the autostart permission (MIUI op 10008) was reset to "ignore" on every boot, so the link to the PC did not start after a reboot. The module now allows it at each boot, adds the app to the battery allowlist and, once the phone is unlocked, starts the link itself.

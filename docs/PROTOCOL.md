@@ -41,6 +41,7 @@ Phone→PC:
 - `{"t":"state","call":"idle|ringing|dialing|active|held","number":"+7...","name":"...","stage":"connecting|dialing"}`: `stage` is optional and only sent with `dialing`: `connecting` while the call is being set up, `dialing` once the network is placing it (the other side rings). `active` is sent only after the call is answered. Older PC apps ignore `stage`. The number also comes for outgoing calls, taken from the call itself
 - `{"t":"audio","route":"ok|unavailable","reason":"..."}`
 - `{"t":"contacts","items":[{"name":"...","number":"..."}]}`: sent on connect, when contacts change, when the contacts permission is granted, and when the PC asks for it
+- `{"t":"photo","key":"9123456789","data":"<base64 JPEG>"|null}`: the answer to a `photo` request. `data` is a contact photo thumbnail, about 96x96, JPEG, at most 8 KiB before base64, or `null` when the number has no contact photo. `key` is repeated from the request. Photos are never part of `contacts`, so the list stays small. Older PC apps never ask and ignore the message
 - `{"t":"mode","mode":"pc|phone"}`: where the call audio is now. The phone owns this value and sends it on connect and on every change
 
 PC→phone:
@@ -52,6 +53,7 @@ PC→phone:
 - `{"t":"hold","on":true|false}`: puts the current call on hold or takes it off hold. The phone confirms with a `state` message, `held` while on hold and `active` after
 - `{"t":"dtmf","digit":"5"}`: plays one DTMF tone into the call, `digit` is one character of `0-9 * # A-D`. The phone ignores anything else and does nothing when no call is active
 - `{"t":"contacts"}`: asks the phone to send its contacts again
+- `{"t":"photo","key":"9123456789","number":"+7 912 345-67-89"}`: asks for the photo of the contact with this number. `key` is the number reduced to its digits, keeping the last 10 (a number with fewer than 4 digits is never asked for), and is what the PC caches by. `number` is the number as the phone sent it, which the phone looks up with the same matching it uses for caller names; when `number` is missing the phone uses `key`. The PC asks only for the contacts it is about to show (the current call and the dial suggestions), once per connection per key. Older phone apps ignore the command
 - `{"t":"mode","mode":"pc|phone"}`: asks the phone to move the current call. `pc` silences the phone's speaker and microphone and streams the call, `phone` is an ordinary call with no streaming. Every new call starts in `pc`, and the phone falls back to ordinary audio when the connection is lost
 
 ## Pairing

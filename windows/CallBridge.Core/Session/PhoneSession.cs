@@ -49,6 +49,8 @@ public sealed class PhoneSession : IDisposable
 
 	public event Action<CallMode>? CallModeChanged;
 
+	public event Action<string, byte[]?>? PhotoReceived;
+
 	public event Action? Closed;
 
 	public PhoneSession(TcpClient client)
@@ -120,6 +122,8 @@ public sealed class PhoneSession : IDisposable
 		frames.WriteAsync(FrameType.Control, Json.Command(type, extra), cts.Token);
 
 	public Task SetCallModeAsync(CallMode mode) => SendCommandAsync("mode", new { Mode = mode });
+
+	public Task RequestPhotoAsync(string key, string number) => SendCommandAsync("photo", new { Key = key, Number = number });
 
 	public Task SetHoldAsync(bool on) => SendCommandAsync("hold", new { On = on });
 
@@ -219,6 +223,10 @@ public sealed class PhoneSession : IDisposable
 				var items = root.TryGetProperty("items", out var array) ? array.Deserialize<List<Contact>>(Json.Options) : null;
 				if (items != null)
 					ContactsChanged?.Invoke(items);
+				break;
+			case "photo":
+				if (PhotoKey.TryParseReply(root, out var photoKey, out var photoData))
+					PhotoReceived?.Invoke(photoKey, photoData);
 				break;
 			case "mode":
 				var mode = root.TryGetProperty("mode", out var m) ? m.GetString() : null;

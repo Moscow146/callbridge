@@ -60,6 +60,8 @@ public partial class MainWindow
 			new("Hannah Brown", "+1 555 0177"),
 			new("Daniel Carter", "+1 555 0199"),
 		];
+		photos.Offer("+1 555 0100", DemoPhoto(0x3A7BD5, 0x00D2FF, false));
+		photos.Offer("+1 555 0199", DemoPhoto(0xF2994A, 0xF2C94C, true));
 		if (scene == "keypad")
 			KeypadButton.IsChecked = true;
 		ShowState(scene switch
@@ -80,6 +82,34 @@ public partial class MainWindow
 				DialBox.Text = "an";
 			}, System.Windows.Threading.DispatcherPriority.ApplicationIdle);
 		}
+	}
+
+	static byte[] DemoPhoto(int from, int to, bool sun)
+	{
+		var visual = new System.Windows.Media.DrawingVisual();
+		using (var dc = visual.RenderOpen())
+		{
+			System.Windows.Media.Color C(int rgb) => System.Windows.Media.Color.FromRgb((byte)(rgb >> 16), (byte)(rgb >> 8), (byte)rgb);
+			dc.DrawRectangle(new System.Windows.Media.LinearGradientBrush(C(from), C(to), 45), null, new Rect(0, 0, 96, 96));
+			var ink = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(235, 255, 255, 255));
+			if (sun)
+			{
+				dc.DrawEllipse(ink, null, new Point(48, 40), 18, 18);
+				dc.DrawRoundedRectangle(ink, null, new Rect(16, 66, 64, 40), 20, 20);
+			}
+			else
+			{
+				dc.DrawEllipse(ink, null, new Point(48, 38), 17, 17);
+				dc.DrawEllipse(ink, null, new Point(48, 100), 38, 30);
+			}
+		}
+		var bitmap = new System.Windows.Media.Imaging.RenderTargetBitmap(96, 96, 96, 96, System.Windows.Media.PixelFormats.Pbgra32);
+		bitmap.Render(visual);
+		var encoder = new System.Windows.Media.Imaging.JpegBitmapEncoder { QualityLevel = 80 };
+		encoder.Frames.Add(System.Windows.Media.Imaging.BitmapFrame.Create(bitmap));
+		using var stream = new System.IO.MemoryStream();
+		encoder.Save(stream);
+		return stream.ToArray();
 	}
 
 	void ScrollDemo(double offset)
