@@ -11,6 +11,7 @@ public static class Strings
 	static readonly Dictionary<string, (string En, string Ru)> Table = new()
 	{
 		["WaitingPhone"] = ("Phone not connected", "Телефон не подключён"),
+		["MetricsLine"] = ("Delay ~{0} ms · jitter {1} ms · late {2}", "Задержка ~{0} мс · джиттер {1} мс · задержанных {2}"),
 		["ConnectedTo"] = ("Connected to {0}", "Подключён: {0}"),
 		["ScanTitle"] = ("Connect the phone", "Подключите телефон"),
 		["ScanHint"] = ("Open CallBridge on the phone and scan this code", "Откройте CallBridge на телефоне и отсканируйте этот код"),

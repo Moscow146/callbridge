@@ -27,6 +27,9 @@ public partial class MainWindow : Window
 	CallMode callMode = CallMode.Pc;
 	TrayIcon? tray;
 	DiscoveryResponder? discovery;
+	readonly DispatcherTimer metricsTimer = new() { Interval = TimeSpan.FromSeconds(1) };
+	readonly CallMetricsLog metricsLog = new(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "CallBridge", "audio.log"));
+	int metricsTicks;
 	bool loading = true;
 	bool quitting;
 
@@ -87,6 +90,8 @@ public partial class MainWindow : Window
 		tray = new TrayIcon(ShowFromTray, Quit);
 		levelTimer.Tick += (_, _) => MicLevel.Value = MeterValue(session?.MicLevel ?? 0);
 		levelTimer.Start();
+		metricsTimer.Tick += (_, _) => ShowMetrics();
+		metricsTimer.Start();
 		Closing += OnClosing;
 		Closed += (_, _) =>
 		{
@@ -180,8 +185,22 @@ public partial class MainWindow : Window
 		s.Deafened = DeafenButton.IsChecked == true;
 	}
 
+	void ShowMetrics()
+	{
+		var m = session?.Metrics;
+		if (m == null || m.FramesReceived == 0)
+		{
+			MetricsText.Text = "";
+			return;
+		}
+		MetricsText.Text = Strings.Format("MetricsLine", $"{m.EstimatedDelayMs:0}", $"{m.JitterMs:0.0}", m.LateFrames);
+		if (++metricsTicks % 5 == 0)
+			metricsLog.Write(m.Summary());
+	}
+
 	void OnPhoneDisconnected()
 	{
+		MetricsText.Text = "";
 		session = null;
 		StatusText.Text = Strings.Get("WaitingPhone");
 		StatusDot.SetResourceReference(Shape.FillProperty, "Orange");
