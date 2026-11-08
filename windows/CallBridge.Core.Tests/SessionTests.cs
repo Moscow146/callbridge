@@ -125,7 +125,10 @@ public class SessionTests
 
 		async Task<string> Next()
 		{
-			var frame = await frames.ReadAsync().WaitAsync(TimeSpan.FromSeconds(5));
+			Frame? frame;
+			do
+				frame = await frames.ReadAsync().WaitAsync(TimeSpan.FromSeconds(5));
+			while (frame is { Type: FrameType.Ping });
 			return System.Text.Encoding.UTF8.GetString(frame!.Value.Payload);
 		}
 
