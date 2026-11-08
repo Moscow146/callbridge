@@ -33,8 +33,14 @@ static class Motion
 
 	static void Slide(ToggleButton toggle, bool on)
 	{
-		if (!Enabled || !toggle.IsLoaded || toggle.Template?.FindName("Knob", toggle) is not Border { RenderTransform: TranslateTransform move })
+		if (!Enabled || !toggle.IsLoaded || toggle.Template?.FindName("Knob", toggle) is not Border { RenderTransform: TranslateTransform shared } knob)
 			return;
+		var move = shared;
+		if (shared.IsFrozen)
+		{
+			move = shared.Clone();
+			knob.RenderTransform = move;
+		}
 		var from = on ? -20 : 20;
 		move.BeginAnimation(TranslateTransform.XProperty, new DoubleAnimation(from, 0, TimeSpan.FromMilliseconds(320)) { EasingFunction = Spring, FillBehavior = FillBehavior.Stop });
 	}
