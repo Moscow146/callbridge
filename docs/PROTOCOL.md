@@ -38,7 +38,7 @@ JSON object with a `t` field.
 
 Phone→PC:
 
-- `{"t":"state","call":"idle|ringing|dialing|active|held","number":"+7...","name":"..."}`
+- `{"t":"state","call":"idle|ringing|dialing|active|held","number":"+7...","name":"...","stage":"connecting|dialing"}`: `stage` is optional and only sent with `dialing`: `connecting` while the call is being set up, `dialing` once the network is placing it (the other side rings). `active` is sent only after the call is answered. Older PC apps ignore `stage`. The number also comes for outgoing calls, taken from the call itself
 - `{"t":"audio","route":"ok|unavailable","reason":"..."}`
 - `{"t":"contacts","items":[{"name":"...","number":"..."}]}`: sent on connect, when contacts change, when the contacts permission is granted, and when the PC asks for it
 - `{"t":"mode","mode":"pc|phone"}`: where the call audio is now. The phone owns this value and sends it on connect and on every change

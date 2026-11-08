@@ -40,6 +40,7 @@ class BridgeService : Service(), BridgeConnection.Listener {
 	private var pairing: Pairing? = null
 	private var lastNumber: String? = null
 	private var lastCall = "idle"
+	private var lastStage: String? = null
 	private var stopping = false
 	private var retryPending = false
 	private var failures = 0
@@ -65,7 +66,7 @@ class BridgeService : Service(), BridgeConnection.Listener {
 			val number = intent.getStringExtra(TelephonyManager.EXTRA_INCOMING_NUMBER)
 			when (intent.getStringExtra(TelephonyManager.EXTRA_STATE)) {
 				TelephonyManager.EXTRA_STATE_RINGING -> onCallState("ringing", number)
-				TelephonyManager.EXTRA_STATE_OFFHOOK -> onCallState(if (CallRelay.holding) "held" else "active", number)
+				TelephonyManager.EXTRA_STATE_OFFHOOK -> onCallState(CallRelay.phase ?: "connecting", number)
 				TelephonyManager.EXTRA_STATE_IDLE -> onCallState("idle", null)
 			}
 		}
@@ -82,7 +83,7 @@ class BridgeService : Service(), BridgeConnection.Listener {
 		networkWatch = NetworkReport.watch(this) { main.post { onNetworkChanged() } }
 		registerReceiver(phoneReceiver, IntentFilter(TelephonyManager.ACTION_PHONE_STATE_CHANGED), RECEIVER_EXPORTED)
 		contentResolver.registerContentObserver(ContactsContract.Contacts.CONTENT_URI, true, contactsObserver)
-		CallRelay.onHoldChanged = { onHoldChanged(it) }
+		CallRelay.onChanged = { onRelayChanged() }
 		CallRelay.onHoldFailed = { main.post { holdFailed() } }
 	}
 
@@ -90,12 +91,10 @@ class BridgeService : Service(), BridgeConnection.Listener {
 		connection?.sendControl(JSONObject().put("t", "holdFailed"))
 	}
 
-	private fun onHoldChanged(holding: Boolean) {
+	private fun onRelayChanged() {
 		main.post {
-			if (lastCall != "active" && lastCall != "held") return@post
-			lastCall = if (holding) "held" else "active"
-			sendState(lastCall, lastNumber)
-			syncCall()
+			val phase = CallRelay.phase ?: return@post
+			onCallState(phase, CallRelay.number)
 		}
 	}
 
@@ -144,7 +143,7 @@ class BridgeService : Service(), BridgeConnection.Listener {
 		if (lastCall != "idle") return
 		lastCall = when (getSystemService(TelephonyManager::class.java).callState) {
 			TelephonyManager.CALL_STATE_RINGING -> "ringing"
-			TelephonyManager.CALL_STATE_OFFHOOK -> if (CallRelay.holding) "held" else "active"
+			TelephonyManager.CALL_STATE_OFFHOOK -> callOf(CallRelay.phase ?: "active")
 			else -> "idle"
 		}
 	}
@@ -308,10 +307,17 @@ class BridgeService : Service(), BridgeConnection.Listener {
 		uplink?.push(packet)
 	}
 
-	private fun onCallState(state: String, number: String?) {
+	private fun callOf(phase: String) = if (phase == "connecting") "dialing" else phase
+
+	private fun onCallState(phase: String, number: String?) {
 		main.post {
-			if (number != null) lastNumber = number
+			val state = callOf(phase)
+			val stage = if (state == "dialing") phase else null
+			val resolved = number ?: if (state == "idle") null else lastNumber
+			if (state == lastCall && stage == lastStage && resolved == lastNumber) return@post
+			lastNumber = resolved
 			lastCall = state
+			lastStage = stage
 			if (state == "idle") {
 				lastNumber = null
 				callMode = CallMode.PC
@@ -323,10 +329,12 @@ class BridgeService : Service(), BridgeConnection.Listener {
 
 	private fun sendState(state: String, number: String?) {
 		val message = JSONObject().put("t", "state").put("call", state)
+		lastStage?.takeIf { state == "dialing" }?.let { message.put("stage", it) }
 		if (number != null) {
 			message.put("number", number)
 			calls.contactName(number)?.let { message.put("name", it) }
 		}
+		android.util.Log.i("CallBridge", "call state=$state stage=$lastStage hasNumber=${number != null}")
 		connection?.sendControl(message)
 	}
 
@@ -355,7 +363,7 @@ class BridgeService : Service(), BridgeConnection.Listener {
 	override fun onDestroy() {
 		contentResolver.unregisterContentObserver(contactsObserver)
 		networkWatch?.let { NetworkReport.unwatch(this, it) }
-		CallRelay.onHoldChanged = null
+		CallRelay.onChanged = null
 		CallRelay.onHoldFailed = null
 		main.removeCallbacks(reconnectTask)
 		releaseWifi()
