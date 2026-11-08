@@ -2,6 +2,8 @@ package dev.callbridge
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.hardware.display.DisplayManager
+import android.view.Display
 import android.provider.Settings
 import android.view.MotionEvent
 import android.view.View
@@ -16,7 +18,9 @@ object Motion {
 		Settings.Global.getFloat(context.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f) > 0f
 
 	fun highestRefreshModeId(context: Context): Int {
-		val display = context.display ?: return 0
+		val display = runCatching { context.display }.getOrNull()
+			?: context.getSystemService(DisplayManager::class.java)?.getDisplay(Display.DEFAULT_DISPLAY)
+			?: return 0
 		val current = display.mode
 		return display.supportedModes
 			.filter { it.physicalWidth == current.physicalWidth && it.physicalHeight == current.physicalHeight }
@@ -38,14 +42,17 @@ object Motion {
 	}
 
 	fun spring(view: View, property: DynamicAnimation.ViewProperty, target: Float, stiffness: Float = 380f, damping: Float = 0.78f, velocity: Float = 0f): SpringAnimation {
+		@Suppress("UNCHECKED_CAST")
+		val springs = (view.getTag(R.id.motion_springs) as? HashMap<Int, SpringAnimation>)
+			?: HashMap<Int, SpringAnimation>().also { view.setTag(R.id.motion_springs, it) }
 		val key = property.hashCode()
-		val existing = view.getTag(key) as? SpringAnimation
+		val existing = springs[key]
 		existing?.cancel()
 		val animation = SpringAnimation(view, property).apply {
 			spring = SpringForce(target).setStiffness(stiffness).setDampingRatio(damping)
 			setStartVelocity(velocity)
 		}
-		view.setTag(key, animation)
+		springs[key] = animation
 		animation.start()
 		return animation
 	}
