@@ -23,6 +23,7 @@ public partial class MainWindow : Window
 	readonly LevelSmoother smoother = new();
 	readonly System.Diagnostics.Stopwatch levelClock = new();
 	readonly bool demo;
+	readonly DtmfTonePlayer tonePlayer = new();
 	IReadOnlyList<Contact> contacts = [];
 	Contact? picked;
 	PhoneSession? session;
@@ -467,8 +468,11 @@ public partial class MainWindow : Window
 
 	void OnKeypadDigit(object sender, RoutedEventArgs e)
 	{
-		if (sender is Button { Tag: string { Length: 1 } digit })
-			_ = session?.SendDtmfAsync(digit[0]);
+		if (sender is not Button { Tag: string { Length: 1 } digit })
+			return;
+		_ = session?.SendDtmfAsync(digit[0]);
+		if (!demo)
+			tonePlayer.Play(SelectedId(SpeakerCombo), digit[0]);
 	}
 
 	void OnModeClick(object sender, RoutedEventArgs e)

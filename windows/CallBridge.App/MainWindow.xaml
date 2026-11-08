@@ -70,7 +70,7 @@
 						<StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
 							<ToggleButton x:Name="HoldButton" Style="{StaticResource CallToggle}" Tag="&#xE769;" local:CallActionGlyph.Checked="&#xE768;" Content="{local:L Hold}"
 										  ToolTip="{local:L HoldTip}" Width="84" Margin="0,0,16,0" Click="OnHoldClick"/>
-							<ToggleButton x:Name="KeypadButton" Style="{StaticResource CallToggle}" Tag="&#xE75F;" Content="{local:L Keypad}"
+							<ToggleButton x:Name="KeypadButton" Style="{StaticResource CallToggle}" Tag="&#xE75F;" local:CallActionGlyph.Checked="&#xE75F;" Content="{local:L Keypad}"
 										  ToolTip="{local:L KeypadTip}" Width="84" Click="OnKeypadClick"/>
 						</StackPanel>
 						<UniformGrid x:Name="KeypadPanel" Columns="3" Margin="0,14,0,0" MaxWidth="240" Visibility="Collapsed">

@@ -31,6 +31,7 @@ public partial class MainWindow
 			"pairingscroll" => 560,
 			"ringing" => 690,
 			"call" => 690,
+			"keypad" => 900,
 			"callscroll" => 540,
 			_ => 660,
 		};
@@ -59,10 +60,13 @@ public partial class MainWindow
 			new("Hannah Brown", "+1 555 0177"),
 			new("Daniel Carter", "+1 555 0199"),
 		];
+		if (scene == "keypad")
+			KeypadButton.IsChecked = true;
 		ShowState(scene switch
 		{
 			"ringing" => new PhoneState(CallState.Ringing, "+1 555 0100", "Anna Smith"),
 			"call" or "callscroll" => new PhoneState(CallState.Active, "+1 555 0100", "Anna Smith"),
+			"keypad" => new PhoneState(CallState.Held, "+1 555 0100", "Anna Smith"),
 			_ => new PhoneState(CallState.Idle, null, null),
 		});
 		ScrollDemo(scene == "callscroll" ? 120 : 0);
