@@ -31,6 +31,7 @@ private const val CONTACTS_DEBOUNCE_MS = 3000L
 class BridgeService : Service(), BridgeConnection.Listener {
 	private val main = Handler(Looper.getMainLooper())
 	private lateinit var calls: CallController
+	private val photos by lazy { ContactPhotos(this) }
 	private lateinit var muter: PhoneAudioMuter
 	private lateinit var overlay: CallModeOverlay
 	private var callMode = CallMode.PC
@@ -273,6 +274,14 @@ class BridgeService : Service(), BridgeConnection.Listener {
 		sendContacts()
 	}
 
+	private fun sendPhoto(key: String, number: String) {
+		val link = connection ?: return
+		Thread {
+			val data = runCatching { photos.photoBase64(number) }.getOrNull()
+			link.sendControl(JSONObject().put("t", "photo").put("key", key).put("data", data ?: JSONObject.NULL))
+		}.start()
+	}
+
 	private fun sendContacts() {
 		val link = connection ?: return
 		Thread {
@@ -310,6 +319,11 @@ class BridgeService : Service(), BridgeConnection.Listener {
 				"reject", "hangup" -> calls.hangup()
 				"dial" -> calls.dial(message.optString("number"))
 				"contacts" -> sendContacts()
+				"photo" -> {
+					val key = message.optString("key")
+					val number = message.optString("number").ifEmpty { key }
+					if (key.isNotEmpty()) sendPhoto(key, number)
+				}
 				"mode" -> setCallMode(message.optString("mode"))
 				"hold" -> if (!CallRelay.hold(message.optBoolean("on", true))) holdFailed()
 				"dtmf" -> Dtmf.parse(message.optString("digit"))?.let { CallRelay.dtmf(it) }

@@ -24,6 +24,7 @@ public partial class MainWindow : Window
 	readonly System.Diagnostics.Stopwatch levelClock = new();
 	readonly bool demo;
 	readonly DtmfTonePlayer tonePlayer = new();
+	readonly ContactPhotoSource photos;
 	IReadOnlyList<Contact> contacts = [];
 	Contact? picked;
 	PhoneSession? session;
@@ -43,6 +44,8 @@ public partial class MainWindow : Window
 		InitializeComponent();
 		InitGlass();
 		demo = demoScene != null;
+		photos = new ContactPhotoSource(demo ? null : ContactPhotoSource.DefaultDirectory);
+		photos.PhotoReady += OnPhotoReady;
 		settings = demo ? new AppSettings { Persist = false, PairingCode = "0000000000000000" } : AppSettings.Load();
 		if (settings.PairingCode == null)
 		{
@@ -213,6 +216,7 @@ public partial class MainWindow : Window
 	void OnPhoneConnected(PhoneSession s)
 	{
 		session = s;
+		photos.Attach(s);
 		s.StateChanged += state => Dispatcher.Invoke(() => ShowState(state));
 		s.HoldFailed += () => Dispatcher.Invoke(ShowHoldFailed);
 		s.ContactsChanged += list => Dispatcher.Invoke(() => contacts = list);
@@ -247,6 +251,7 @@ public partial class MainWindow : Window
 	{
 		MetricsText.Text = "";
 		session = null;
+		photos.Detach();
 		SyncMonitor();
 		StatusText.Text = Strings.Get("WaitingPhone");
 		StatusDot.SetResourceReference(Shape.FillProperty, "Orange");
@@ -328,9 +333,10 @@ public partial class MainWindow : Window
 		Motion.Show(RingingActions, ringing);
 		Motion.Show(CallActions, state.Call is CallState.Active or CallState.Dialing or CallState.Held, 16);
 		Motion.Show(DialPanel, idle);
-		var initials = idle ? "" : Initials(state.Name);
+		var initials = idle ? "" : ContactAvatar.Initialize(state.Name);
 		AvatarText.Text = initials;
 		AvatarGlyph.Visibility = initials.Length == 0 ? Visibility.Visible : Visibility.Collapsed;
+		ShowAvatarPhoto(idle ? null : state.Number, !idle && state.Name != null);
 		if (changed && IsLoaded)
 		{
 			Motion.Refresh(CallTitle);
@@ -338,10 +344,43 @@ public partial class MainWindow : Window
 		}
 	}
 
-	static string Initials(string? name)
+	string? avatarKey;
+
+	void ShowAvatarPhoto(string? number, bool known)
 	{
-		var words = (name ?? "").Split(' ', StringSplitOptions.RemoveEmptyEntries);
-		return string.Concat(words.Take(2).Select(w => char.ToUpperInvariant(w[0])));
+		var key = known ? PhotoKey.Normalize(number) : null;
+		var image = key == null ? null : photos.Get(number);
+		if (key == avatarKey && (image != null) == (AvatarPhoto.Fill != null))
+			return;
+		avatarKey = key;
+		AvatarPhoto.BeginAnimation(OpacityProperty, null);
+		if (image == null)
+		{
+			AvatarPhoto.Fill = null;
+			AvatarPhoto.Opacity = 0;
+			return;
+		}
+		AvatarPhoto.Fill = ContactPhotoSource.Brush(image);
+		AvatarPhoto.Opacity = 0;
+		AvatarPhoto.BeginAnimation(OpacityProperty, new System.Windows.Media.Animation.DoubleAnimation(1, TimeSpan.FromMilliseconds(220)));
+	}
+
+	void OnPhotoReady(string key)
+	{
+		if (key == avatarKey)
+			ShowAvatarPhoto(lastState.Number, lastState.Name != null);
+		if (SuggestionList.ItemsSource is IEnumerable<ContactAvatar> items)
+		{
+			foreach (var item in items.Where(i => PhotoKey.Normalize(i.Number) == key))
+				ApplyPhoto(item);
+		}
+	}
+
+	void ApplyPhoto(ContactAvatar item)
+	{
+		var image = photos.Get(item.Number);
+		if (image != null && !item.HasPhoto)
+			item.Photo = ContactPhotoSource.Brush(image);
 	}
 
 	void OnWindowKey(object sender, KeyEventArgs e)
@@ -532,7 +571,7 @@ public partial class MainWindow : Window
 			return picked.Number;
 		if (LooksLikeNumber(text))
 			return text;
-		if (SuggestionList.SelectedItem is Contact suggested)
+		if (SuggestionList.SelectedItem is ContactAvatar { Contact: var suggested })
 		{
 			Pick(suggested);
 			return suggested.Number;
@@ -569,7 +608,10 @@ public partial class MainWindow : Window
 		var matches = contacts
 			.Where(c => c.Name.Contains(text, StringComparison.CurrentCultureIgnoreCase) || (digits.Length >= 2 && Digits(c.Number).Contains(digits)))
 			.Take(6)
+			.Select(c => new ContactAvatar(c))
 			.ToList();
+		foreach (var match in matches)
+			ApplyPhoto(match);
 		SuggestionList.ItemsSource = matches;
 		SuggestionList.SelectedIndex = matches.Count > 0 ? 0 : -1;
 		SuggestionPopup.IsOpen = matches.Count > 0;
@@ -605,7 +647,7 @@ public partial class MainWindow : Window
 
 	void OnSuggestionClick(object sender, MouseButtonEventArgs e)
 	{
-		if (sender is ListBoxItem { DataContext: Contact contact })
+		if (sender is ListBoxItem { DataContext: ContactAvatar { Contact: var contact } })
 		{
 			e.Handled = true;
 			Pick(contact);
