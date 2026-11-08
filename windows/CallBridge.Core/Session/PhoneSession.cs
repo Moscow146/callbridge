@@ -12,6 +12,8 @@ public sealed class PhoneSession : IDisposable
 	readonly FrameStream frames;
 	readonly VoiceDecoder decoder = new();
 	readonly CancellationTokenSource cts = new();
+	readonly System.Diagnostics.Stopwatch clock = System.Diagnostics.Stopwatch.StartNew();
+	readonly CallMetrics metrics = new();
 	SpeakerPlayer? speaker;
 	MicCapture? mic;
 
@@ -70,6 +72,8 @@ public sealed class PhoneSession : IDisposable
 		oldMic?.Dispose();
 	}
 
+	public CallMetricsSnapshot Metrics => metrics.Snapshot(speaker?.BufferedMs ?? 0, speaker?.Trims ?? 0);
+
 	public float MicLevel => Math.Min(1f, (mic?.Level ?? 0f) * MicGain);
 
 	public float SpeakerVolume
@@ -103,6 +107,7 @@ public sealed class PhoneSession : IDisposable
 
 	public async Task RunAsync()
 	{
+		_ = PingLoopAsync();
 		try
 		{
 			while (!cts.IsCancellationRequested)
@@ -122,16 +127,39 @@ public sealed class PhoneSession : IDisposable
 		}
 	}
 
+	async Task PingLoopAsync()
+	{
+		try
+		{
+			while (!cts.IsCancellationRequested)
+			{
+				var stamp = BitConverter.GetBytes(clock.Elapsed.Ticks);
+				await frames.WriteAsync(FrameType.Ping, stamp, cts.Token);
+				await Task.Delay(PingIntervalMs, cts.Token);
+			}
+		}
+		catch (Exception e) when (e is IOException or OperationCanceledException or ObjectDisposedException or SocketException)
+		{
+		}
+	}
+
+	public int PingIntervalMs { get; set; } = 2000;
+
 	void Handle(Frame frame)
 	{
 		switch (frame.Type)
 		{
 			case FrameType.Downlink:
+				metrics.FrameArrived(clock.Elapsed.TotalMilliseconds);
 				if (!Deafened)
 					speaker?.Enqueue(decoder.Decode(frame.Payload));
 				break;
 			case FrameType.Ping:
 				_ = frames.WriteAsync(FrameType.Pong, frame.Payload, cts.Token);
+				break;
+			case FrameType.Pong:
+				if (frame.Payload.Length == 8)
+					metrics.RoundTrip((clock.Elapsed - TimeSpan.FromTicks(BitConverter.ToInt64(frame.Payload))).TotalMilliseconds);
 				break;
 			case FrameType.Control:
 				HandleControl(frame.Payload);

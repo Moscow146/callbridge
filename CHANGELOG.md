@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- PC app: the status bar shows the estimated audio delay, jitter and late frames during a call. The PC pings the phone every two seconds to measure the round trip, and a summary line (delay, round trip, jitter, late frames, buffer trims) is written to `%APPDATA%\CallBridgeudio.log` every five seconds.
+
 ## 0.4.0
 
 - Glass by the look of Apple materials on all three: the PC window, the phone app and the website. It is only the control layer; cards, lists and text stay solid.

@@ -20,6 +20,10 @@ public sealed class SpeakerPlayer : IDisposable
 		set => volume.Volume = Math.Clamp(value, 0f, 2f);
 	}
 
+	public double BufferedMs => buffer.BufferedDuration.TotalMilliseconds;
+
+	public int Trims { get; private set; }
+
 	public SpeakerPlayer(string? deviceId)
 	{
 		device = AudioDevices.Open(DataFlow.Render, deviceId);
@@ -37,7 +41,10 @@ public sealed class SpeakerPlayer : IDisposable
 	public void Enqueue(short[] pcm)
 	{
 		if (buffer.BufferedDuration > MaxLatency)
+		{
 			buffer.ClearBuffer();
+			Trims++;
+		}
 		var bytes = new byte[pcm.Length * 2];
 		Buffer.BlockCopy(pcm, 0, bytes, 0, bytes.Length);
 		buffer.AddSamples(bytes, 0, bytes.Length);
