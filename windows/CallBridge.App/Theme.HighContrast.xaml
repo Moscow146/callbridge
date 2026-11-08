@@ -20,6 +20,8 @@
 	<SolidColorBrush x:Key="Green" Color="{x:Static SystemColors.WindowTextColor}"/>
 	<SolidColorBrush x:Key="Red" Color="{x:Static SystemColors.WindowTextColor}"/>
 	<SolidColorBrush x:Key="Orange" Color="{x:Static SystemColors.WindowTextColor}"/>
+	<SolidColorBrush x:Key="MeterFill" Color="{x:Static SystemColors.HighlightColor}"/>
+	<SolidColorBrush x:Key="MeterEdge" Color="{x:Static SystemColors.WindowTextColor}"/>
 	<SolidColorBrush x:Key="Thumb" Color="{x:Static SystemColors.WindowTextColor}"/>
 	<SolidColorBrush x:Key="ThumbRim" Color="{x:Static SystemColors.WindowTextColor}"/>
 	<SolidColorBrush x:Key="GlassBar" Color="{x:Static SystemColors.WindowColor}"/>

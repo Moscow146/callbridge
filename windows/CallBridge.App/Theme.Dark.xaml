@@ -20,6 +20,8 @@
 	<SolidColorBrush x:Key="Green" Color="#FF4AD968"/>
 	<SolidColorBrush x:Key="Red" Color="#FFFF6165"/>
 	<SolidColorBrush x:Key="Orange" Color="#FFFFA056"/>
+	<SolidColorBrush x:Key="MeterFill" Color="#FF4AD968"/>
+	<SolidColorBrush x:Key="MeterEdge" Color="#00000000"/>
 	<SolidColorBrush x:Key="Thumb" Color="#FFFFFFFF"/>
 	<SolidColorBrush x:Key="ThumbRim" Color="#FF8E8E93"/>
 	<SolidColorBrush x:Key="GlassBar" Color="#6B1C1C1E"/>

@@ -86,7 +86,7 @@ public sealed class PhoneSession : IDisposable
 
 	public CallMetricsSnapshot Metrics => metrics.Snapshot(speaker?.BufferedMs ?? 0, speaker?.Trims ?? 0);
 
-	public float MicLevel => Math.Min(1f, (mic?.Level ?? 0f) * MicGain);
+	public float TakeMicPeak() => mic?.TakePeak() ?? 0f;
 
 	public float SpeakerVolume
 	{

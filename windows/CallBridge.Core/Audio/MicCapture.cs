@@ -13,7 +13,11 @@ public sealed class MicCapture : IDisposable
 
 	public event Action<short[]>? FrameReady;
 
+	int peakBits;
+
 	public float Level { get; private set; }
+
+	public float TakePeak() => BitConverter.Int32BitsToSingle(Interlocked.Exchange(ref peakBits, 0));
 
 	public MicCapture(string? deviceId)
 	{
@@ -27,11 +31,9 @@ public sealed class MicCapture : IDisposable
 	void OnData(object? sender, WaveInEventArgs e)
 	{
 		var samples = e.BytesRecorded / 2;
-		var peak = 0;
 		for (var i = 0; i < samples; i++)
 		{
 			var s = BitConverter.ToInt16(e.Buffer, i * 2);
-			peak = Math.Max(peak, Math.Abs((int)s));
 			frame[filled++] = s;
 			if (filled == frame.Length)
 			{
@@ -39,7 +41,16 @@ public sealed class MicCapture : IDisposable
 				FrameReady?.Invoke((short[])frame.Clone());
 			}
 		}
-		Level = peak / 32768f;
+		var peak = LevelMeter.Peak(System.Runtime.InteropServices.MemoryMarshal.Cast<byte, short>(e.Buffer.AsSpan(0, samples * 2)));
+		Level = peak;
+		int seen;
+		do
+		{
+			seen = Volatile.Read(ref peakBits);
+			if (BitConverter.Int32BitsToSingle(seen) >= peak)
+				break;
+		}
+		while (Interlocked.CompareExchange(ref peakBits, BitConverter.SingleToInt32Bits(peak), seen) != seen);
 	}
 
 	public void Dispose()
