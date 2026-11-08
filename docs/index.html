@@ -12,6 +12,7 @@
 	<meta property="og:description" content="Phone calls on your Windows PC, with the phone silent in your pocket.">
 	<meta property="og:image" content="https://moscow146.github.io/callbridge/screenshots/windows-call.png">
 	<link rel="icon" href="icon.png">
+	<script>document.documentElement.classList.add("js")</script>
 	<link rel="stylesheet" href="assets/site.css">
 </head>
 <body>
@@ -195,5 +196,28 @@
 			update();
 		})();
 	</script>
+		<script>
+			(function () {
+				var items = document.querySelectorAll(".features li, .steps li, .requirements > div, .gallery figure, section h2, .section-lead, .note, section .actions");
+				var reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
+				if (reduce.matches || !("IntersectionObserver" in window)) {
+					document.documentElement.classList.remove("js");
+					return;
+				}
+				items.forEach(function (el) {
+					var index = Array.prototype.indexOf.call(el.parentElement.children, el);
+					el.style.setProperty("--i", Math.min(index, 6));
+					el.classList.add("reveal");
+				});
+				var seen = new IntersectionObserver(function (entries) {
+					entries.forEach(function (e) {
+						if (!e.isIntersecting) return;
+						e.target.classList.add("shown");
+						seen.unobserve(e.target);
+					});
+				}, { rootMargin: "0px 0px -8% 0px", threshold: 0.08 });
+				items.forEach(function (el) { seen.observe(el); });
+			})();
+		</script>
 </body>
 </html>
