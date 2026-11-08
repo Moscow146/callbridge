@@ -299,7 +299,7 @@ public partial class MainWindow : Window
 	void ShowState(PhoneState state)
 	{
 		var ringingAgain = state.Call == CallState.Ringing && lastState.Call == CallState.Ringing;
-		var changed = state.Call != lastState.Call || state.Name != lastState.Name || state.Number != lastState.Number;
+		var changed = state.Call != lastState.Call || state.Stage != lastState.Stage || state.Name != lastState.Name || state.Number != lastState.Number;
 		lastState = state;
 		var who = state.Name ?? state.Number ?? Strings.Get("UnknownNumber");
 		var idle = state.Call == CallState.Idle;
@@ -307,7 +307,7 @@ public partial class MainWindow : Window
 		CallSub.Text = state.Call switch
 		{
 			CallState.Ringing => Strings.Get("IncomingCall"),
-			CallState.Dialing => Strings.Get("Calling"),
+			CallState.Dialing => Strings.Get(state.Stage == "connecting" ? "Connecting" : "Calling"),
 			CallState.Active => Strings.Get(callMode == CallMode.Phone ? "InCallOnPhone" : "InCall"),
 			CallState.Held => Strings.Get("OnHold"),
 			_ => Strings.Get("WaitingCall"),

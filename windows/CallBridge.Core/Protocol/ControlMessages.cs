@@ -22,7 +22,7 @@ public sealed record Hello(int Version, string Device, string Token);
 
 public sealed record HelloAck(int Version, bool Ok, string? Error = null);
 
-public sealed record PhoneState(CallState Call, string? Number, string? Name);
+public sealed record PhoneState(CallState Call, string? Number, string? Name, string? Stage = null);
 
 public sealed record Contact(string Name, string Number);
 

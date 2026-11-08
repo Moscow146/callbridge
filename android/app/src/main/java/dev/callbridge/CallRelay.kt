@@ -28,12 +28,12 @@ class BridgeInCallService : InCallService() {
 object CallRelay {
 	private val main = Handler(Looper.getMainLooper())
 	private val calls = ArrayList<Call>()
-	var onHoldChanged: ((Boolean) -> Unit)? = null
+	var onChanged: (() -> Unit)? = null
 	var onHoldFailed: (() -> Unit)? = null
 
 	private val callback = object : Call.Callback() {
 		override fun onStateChanged(call: Call, state: Int) {
-			notifyHold()
+			notifyChanged()
 		}
 
 		override fun onConnectionEvent(call: Call, event: String?, extras: Bundle?) {
@@ -48,7 +48,7 @@ object CallRelay {
 		main.post {
 			calls.add(call)
 			call.registerCallback(callback)
-			notifyHold()
+			notifyChanged()
 		}
 	}
 
@@ -56,11 +56,22 @@ object CallRelay {
 		main.post {
 			call.unregisterCallback(callback)
 			calls.remove(call)
-			notifyHold()
+			notifyChanged()
 		}
 	}
 
 	val connected: Boolean get() = current() != null
+
+	val number: String? get() = current()?.details?.handle?.schemeSpecificPart?.takeIf { it.isNotEmpty() }
+
+	val phase: String? get() = when (current()?.state) {
+		Call.STATE_NEW, Call.STATE_CONNECTING, Call.STATE_SELECT_PHONE_ACCOUNT -> "connecting"
+		Call.STATE_DIALING, Call.STATE_PULLING_CALL -> "dialing"
+		Call.STATE_RINGING -> "ringing"
+		Call.STATE_ACTIVE -> "active"
+		Call.STATE_HOLDING -> "held"
+		else -> null
+	}
 
 	val holding: Boolean get() = current()?.state == Call.STATE_HOLDING
 
@@ -89,7 +100,7 @@ object CallRelay {
 
 	private fun current(): Call? = calls.lastOrNull { it.state != Call.STATE_DISCONNECTED && it.state != Call.STATE_DISCONNECTING }
 
-	private fun notifyHold() {
-		onHoldChanged?.invoke(holding)
+	private fun notifyChanged() {
+		onChanged?.invoke()
 	}
 }
