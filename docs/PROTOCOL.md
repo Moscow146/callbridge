@@ -49,6 +49,8 @@ PC→phone:
 - `{"t":"hangup"}`
 - `{"t":"reject"}`
 - `{"t":"dial","number":"+7..."}`
+- `{"t":"hold","on":true|false}`: puts the current call on hold or takes it off hold. The phone confirms with a `state` message, `held` while on hold and `active` after
+- `{"t":"dtmf","digit":"5"}`: plays one DTMF tone into the call, `digit` is one character of `0-9 * # A-D`. The phone ignores anything else and does nothing when no call is active
 - `{"t":"contacts"}`: asks the phone to send its contacts again
 - `{"t":"mode","mode":"pc|phone"}`: asks the phone to move the current call. `pc` silences the phone's speaker and microphone and streams the call, `phone` is an ordinary call with no streaming. Every new call starts in `pc`, and the phone falls back to ordinary audio when the connection is lost
 

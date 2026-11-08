@@ -101,6 +101,11 @@ public sealed class PhoneSession : IDisposable
 
 	public Task SetCallModeAsync(CallMode mode) => SendCommandAsync("mode", new { Mode = mode });
 
+	public Task SetHoldAsync(bool on) => SendCommandAsync("hold", new { On = on });
+
+	public Task SendDtmfAsync(char digit) =>
+		Dtmf.IsValid(digit) ? SendCommandAsync("dtmf", new { Digit = char.ToUpperInvariant(digit).ToString() }) : Task.CompletedTask;
+
 	public async Task RunAsync()
 	{
 		try

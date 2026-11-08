@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Hold and a keypad for DTMF tones in the PC window, with matching `hold` and `dtmf` control messages. The phone app now registers a non-UI in-call service for them, so reflash the Magisk module (it adds the `CONTROL_INCALL_EXPERIENCE` permission) and reboot.
+
 ## 0.4.0
 
 - Glass by the look of Apple materials on all three: the PC window, the phone app and the website. It is only the control layer; cards, lists and text stay solid.

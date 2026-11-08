@@ -26,6 +26,13 @@ public sealed record PhoneState(CallState Call, string? Number, string? Name);
 
 public sealed record Contact(string Name, string Number);
 
+public static class Dtmf
+{
+	public const string Symbols = "0123456789*#ABCD";
+
+	public static bool IsValid(char digit) => Symbols.Contains(char.ToUpperInvariant(digit));
+}
+
 public static class Json
 {
 	public const int ProtocolVersion = 1;
