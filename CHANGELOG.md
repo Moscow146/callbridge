@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- PC app: a "Start with Windows" switch under Startup starts CallBridge at sign-in, minimized to the tray. It is kept in the current user's Run key, so nothing needs admin rights.
+
 ## 0.4.0
 
 - Glass by the look of Apple materials on all three: the PC window, the phone app and the website. It is only the control layer; cards, lists and text stay solid.
