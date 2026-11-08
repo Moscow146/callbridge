@@ -56,6 +56,10 @@ public partial class MainWindow : Window
 		EchoCheck.IsChecked = settings.EchoCancellation;
 		AutostartSwitch.IsChecked = !demo && Autostart.Enabled;
 		AutostartSwitch.IsEnabled = !demo && Autostart.Supported;
+		StartMenuSwitch.IsChecked = !demo && Shortcuts.Exists(ShortcutPlace.StartMenu);
+		StartMenuSwitch.IsEnabled = !demo && Shortcuts.Supported;
+		DesktopSwitch.IsChecked = !demo && Shortcuts.Exists(ShortcutPlace.Desktop);
+		DesktopSwitch.IsEnabled = !demo && Shortcuts.Supported;
 		loading = false;
 
 		if (demo)
@@ -367,6 +371,23 @@ public partial class MainWindow : Window
 		{
 			AutostartSwitch.IsChecked = Autostart.Enabled;
 			MessageBox.Show(Strings.Format("AutostartError", ex.Message), "CallBridge", MessageBoxButton.OK, MessageBoxImage.Error);
+		}
+	}
+
+	void OnStartMenuClick(object sender, RoutedEventArgs e) => ChangeShortcut(ShortcutPlace.StartMenu, StartMenuSwitch);
+
+	void OnDesktopClick(object sender, RoutedEventArgs e) => ChangeShortcut(ShortcutPlace.Desktop, DesktopSwitch);
+
+	static void ChangeShortcut(ShortcutPlace place, System.Windows.Controls.Primitives.ToggleButton toggle)
+	{
+		try
+		{
+			Shortcuts.Set(place, toggle.IsChecked == true);
+		}
+		catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or System.Security.SecurityException or System.Runtime.InteropServices.COMException)
+		{
+			toggle.IsChecked = Shortcuts.Exists(place);
+			MessageBox.Show(Strings.Format("ShortcutError", ex.Message), "CallBridge", MessageBoxButton.OK, MessageBoxImage.Error);
 		}
 	}
 

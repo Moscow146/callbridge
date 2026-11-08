@@ -166,15 +166,35 @@
 			</Border>
 			<TextBlock Style="{StaticResource SectionHeader}" Text="{local:L Startup}"/>
 			<Border Style="{StaticResource Section}">
-				<Grid>
-					<Grid.ColumnDefinitions>
-						<ColumnDefinition Width="*"/>
-						<ColumnDefinition Width="Auto"/>
-					</Grid.ColumnDefinitions>
-					<TextBlock Style="{StaticResource Field}" Text="{local:L StartWithWindows}" TextWrapping="Wrap" Margin="0,0,12,0"/>
-					<ToggleButton x:Name="AutostartSwitch" Grid.Column="1" Style="{StaticResource SwitchToggle}" ToolTip="{local:L StartWithWindowsTip}"
-								  AutomationProperties.Name="{local:L StartWithWindows}" Click="OnAutostartClick"/>
-				</Grid>
+				<StackPanel>
+					<Grid>
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="*"/>
+							<ColumnDefinition Width="Auto"/>
+						</Grid.ColumnDefinitions>
+						<TextBlock Style="{StaticResource Field}" Text="{local:L StartWithWindows}" TextWrapping="Wrap" Margin="0,0,12,0"/>
+						<ToggleButton x:Name="AutostartSwitch" Grid.Column="1" Style="{StaticResource SwitchToggle}" ToolTip="{local:L StartWithWindowsTip}"
+									  AutomationProperties.Name="{local:L StartWithWindows}" Click="OnAutostartClick"/>
+					</Grid>
+					<Grid Margin="0,12,0,0">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="*"/>
+							<ColumnDefinition Width="Auto"/>
+						</Grid.ColumnDefinitions>
+						<TextBlock Style="{StaticResource Field}" Text="{local:L AddToStartMenu}" TextWrapping="Wrap" Margin="0,0,12,0"/>
+						<ToggleButton x:Name="StartMenuSwitch" Grid.Column="1" Style="{StaticResource SwitchToggle}" ToolTip="{local:L AddToStartMenuTip}"
+									  AutomationProperties.Name="{local:L AddToStartMenu}" Click="OnStartMenuClick"/>
+					</Grid>
+					<Grid Margin="0,12,0,0">
+						<Grid.ColumnDefinitions>
+							<ColumnDefinition Width="*"/>
+							<ColumnDefinition Width="Auto"/>
+						</Grid.ColumnDefinitions>
+						<TextBlock Style="{StaticResource Field}" Text="{local:L AddToDesktop}" TextWrapping="Wrap" Margin="0,0,12,0"/>
+						<ToggleButton x:Name="DesktopSwitch" Grid.Column="1" Style="{StaticResource SwitchToggle}" ToolTip="{local:L AddToDesktopTip}"
+									  AutomationProperties.Name="{local:L AddToDesktop}" Click="OnDesktopClick"/>
+					</Grid>
+				</StackPanel>
 			</Border>
 			<Border Height="128" Visibility="{Binding Visibility, ElementName=CallActions}"/>
 		</StackPanel>
