@@ -175,6 +175,25 @@ public class SessionTests
 	}
 
 	[Fact]
+	public async Task ReceivesHoldFailed()
+	{
+		using var server = new CallBridgeServer("0123456789abcdef", 47822);
+		server.Start();
+		var received = new TaskCompletionSource<bool>();
+		server.PhoneConnected += s => s.HoldFailed += () => received.TrySetResult(true);
+
+		using var client = new TcpClient();
+		await client.ConnectAsync(IPAddress.Loopback, server.Port);
+		var frames = new FrameStream(client.GetStream());
+		await frames.WriteAsync(FrameType.Hello, Json.Bytes(new Hello(Json.ProtocolVersion, "test", server.PairingCode)));
+		await frames.ReadAsync();
+		await Task.Delay(200);
+		await frames.WriteAsync(FrameType.Control, System.Text.Encoding.UTF8.GetBytes("""{"t":"holdFailed"}"""));
+
+		Assert.True(await received.Task.WaitAsync(TimeSpan.FromSeconds(5)));
+	}
+
+	[Fact]
 	public async Task AnswersDiscoveryQuery()
 	{
 		using var responder = new DiscoveryResponder("MY-PC", 47800, 47821);

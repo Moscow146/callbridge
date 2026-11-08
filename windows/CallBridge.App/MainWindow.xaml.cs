@@ -174,6 +174,7 @@ public partial class MainWindow : Window
 	{
 		session = s;
 		s.StateChanged += state => Dispatcher.Invoke(() => ShowState(state));
+		s.HoldFailed += () => Dispatcher.Invoke(ShowHoldFailed);
 		s.ContactsChanged += list => Dispatcher.Invoke(() => contacts = list);
 		s.CallModeChanged += mode => Dispatcher.Invoke(() => ShowCallMode(mode));
 		s.AudioRouteChanged += reason => Dispatcher.Invoke(() => ShowRoute(reason == null ? null : Strings.Format("AudioUnavailable", reason)));
@@ -238,6 +239,19 @@ public partial class MainWindow : Window
 		{
 			ShowRoute(Strings.Format("AudioDeviceError", e.Message));
 		}
+	}
+
+	void ShowHoldFailed()
+	{
+		HoldButton.IsChecked = lastState.Call == CallState.Held;
+		CallSub.Text = Strings.Get("HoldRefused");
+		var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3) };
+		timer.Tick += (_, _) =>
+		{
+			timer.Stop();
+			ShowState(lastState);
+		};
+		timer.Start();
 	}
 
 	void ShowState(PhoneState state)

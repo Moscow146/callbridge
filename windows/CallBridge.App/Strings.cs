@@ -56,6 +56,7 @@ public static class Strings
 		["Keypad"] = ("Keypad", "Клавиши"),
 		["KeypadTip"] = ("Show the keypad to send tones into the call", "Показать клавиатуру для тоновых сигналов в звонке"),
 		["OnHold"] = ("On hold", "На удержании"),
+		["HoldRefused"] = ("The network refused to hold this call", "Сеть не разрешила удержание этого звонка"),
 		["InCallOnPhone"] = ("In call · sound on the phone", "Разговор · звук на телефоне"),
 		["MoveToPhone"] = ("Move to phone", "Перевести на телефон"),
 		["MoveToPc"] = ("Move to PC", "Перевести на ПК"),

@@ -40,6 +40,8 @@ public sealed class PhoneSession : IDisposable
 
 	public event Action<PhoneState>? StateChanged;
 
+	public event Action? HoldFailed;
+
 	public event Action<string?>? AudioRouteChanged;
 
 	public event Action<IReadOnlyList<Contact>>? ContactsChanged;
@@ -199,6 +201,9 @@ public sealed class PhoneSession : IDisposable
 				var state = root.Deserialize<PhoneState>(Json.Options);
 				if (state != null)
 					StateChanged?.Invoke(state);
+				break;
+			case "holdFailed":
+				HoldFailed?.Invoke();
 				break;
 			case "contacts":
 				var items = root.TryGetProperty("items", out var array) ? array.Deserialize<List<Contact>>(Json.Options) : null;
