@@ -59,6 +59,7 @@ class CallModeOverlay(private val context: Context, private val onToggle: () -> 
 			setPaddingRelative((14 * density).toInt(), (8 * density).toInt(), (18 * density).toInt(), (8 * density).toInt())
 			elevation = 8 * density
 		}
+		SystemFont.apply(text)
 		val margin = (16 * density).toInt()
 		val view = FrameLayout(context).apply {
 			setPadding(margin, margin, margin, margin)

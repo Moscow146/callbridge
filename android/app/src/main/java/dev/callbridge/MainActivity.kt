@@ -58,6 +58,7 @@ class MainActivity : Activity() {
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 		setContentView(R.layout.activity_main)
+		SystemFont.apply(findViewById(android.R.id.content))
 		content = findViewById(R.id.content)
 		badge = findViewById(R.id.status_badge)
 		icon = findViewById(R.id.status_icon)
