@@ -76,6 +76,7 @@ class BridgeConnection(
 				if (!host.startsWith("127.")) lan?.bindSocket(s)
 				s.tcpNoDelay = true
 				s.connect(InetSocketAddress(host, pairing.port), CONNECT_TIMEOUT_MS)
+				Log.i("CallBridge", "connected to $host, bound to wifi=${lan != null && !host.startsWith("127.")}")
 				return s
 			} catch (e: IOException) {
 				Log.w("CallBridge", "connect to $host failed: ${e.message}")
