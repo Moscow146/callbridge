@@ -193,6 +193,7 @@
 				<Ellipse x:Name="StatusDot" Width="8" Height="8" Fill="{DynamicResource Orange}" VerticalAlignment="Center"/>
 				<TextBlock x:Name="StatusText" Text="{local:L WaitingPhone}" FontSize="13" Foreground="{DynamicResource Label}" Margin="8,0,0,0" VerticalAlignment="Center"
 						   AutomationProperties.LiveSetting="Polite"/>
+				<TextBlock x:Name="MetricsText" FontSize="12" Foreground="{DynamicResource Label}" Opacity="0.7" Margin="14,0,0,0" VerticalAlignment="Center"/>
 			</StackPanel>
 		</Border>
 		<Border CornerRadius="28" Background="{DynamicResource GlassSheen}" IsHitTestVisible="False"/>

@@ -51,6 +51,33 @@ public class SessionTests
 	}
 
 	[Fact]
+	public async Task MeasuresRoundTripFromPong()
+	{
+		using var server = new CallBridgeServer("0123456789abcdef", 47815);
+		server.Start();
+		var session = new TaskCompletionSource<PhoneSession>();
+		server.PhoneConnected += s => session.TrySetResult(s);
+
+		using var client = new TcpClient();
+		await client.ConnectAsync(IPAddress.Loopback, server.Port);
+		var frames = new FrameStream(client.GetStream());
+		await frames.WriteAsync(FrameType.Hello, Json.Bytes(new Hello(Json.ProtocolVersion, "test", server.PairingCode)));
+		await frames.ReadAsync();
+		var phone = await session.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+		Frame? ping;
+		do
+			ping = await frames.ReadAsync();
+		while (ping is { Type: not FrameType.Ping });
+		await frames.WriteAsync(FrameType.Pong, ping!.Value.Payload);
+
+		for (var i = 0; i < 50 && phone.Metrics.RoundTripSamples == 0; i++)
+			await Task.Delay(100);
+		Assert.Equal(1, phone.Metrics.RoundTripSamples);
+		Assert.InRange(phone.Metrics.RoundTripMs, 0, 2000);
+	}
+
+	[Fact]
 	public async Task ExchangesCallMode()
 	{
 		using var server = new CallBridgeServer("0123456789abcdef", 47814);
@@ -74,7 +101,10 @@ public class SessionTests
 		Assert.Equal(CallMode.Phone, await received.Task.WaitAsync(TimeSpan.FromSeconds(5)));
 
 		await phone.SetCallModeAsync(CallMode.Pc);
-		var request = await frames.ReadAsync().WaitAsync(TimeSpan.FromSeconds(5));
+		Frame? request;
+		do
+			request = await frames.ReadAsync().WaitAsync(TimeSpan.FromSeconds(5));
+		while (request is { Type: FrameType.Ping });
 		Assert.Equal("""{"t":"mode","mode":"pc"}""", System.Text.Encoding.UTF8.GetString(request!.Value.Payload));
 	}
 
