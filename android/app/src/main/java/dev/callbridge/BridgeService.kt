@@ -39,6 +39,7 @@ class BridgeService : Service(), BridgeConnection.Listener {
 	private var lastNumber: String? = null
 	private var lastCall = "idle"
 	private var stopping = false
+	private var networkWatch: android.net.ConnectivityManager.NetworkCallback? = null
 
 	private val sendContactsTask = Runnable { sendContacts() }
 
@@ -68,6 +69,7 @@ class BridgeService : Service(), BridgeConnection.Listener {
 		overlay = CallModeOverlay(this, ::toggleCallMode)
 		val channel = NotificationChannel(CHANNEL_ID, getString(R.string.notification_channel), NotificationManager.IMPORTANCE_LOW)
 		getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
+		networkWatch = NetworkReport.watch(this)
 		registerReceiver(phoneReceiver, IntentFilter(TelephonyManager.ACTION_PHONE_STATE_CHANGED), RECEIVER_EXPORTED)
 		contentResolver.registerContentObserver(ContactsContract.Contacts.CONTENT_URI, true, contactsObserver)
 	}
@@ -144,6 +146,7 @@ class BridgeService : Service(), BridgeConnection.Listener {
 		disconnect()
 		BridgeState.update(getString(R.string.status_connecting, current.name))
 		val lan = LanNetwork.wifi(this)
+		android.util.Log.i("CallBridge", "connecting: ${NetworkReport.snapshot(this, lan)}")
 		connection =BridgeConnection(current, lan, LanNetwork.broadcast(this, lan), Build.MODEL, this).also { it.start() }
 	}
 
@@ -161,6 +164,7 @@ class BridgeService : Service(), BridgeConnection.Listener {
 	}
 
 	override fun onConnected() {
+		android.util.Log.i("CallBridge", "connected: ${NetworkReport.snapshot(this, null)}")
 		BridgeState.update(pairing?.name.orEmpty(), connected = true)
 		main.post {
 			sendState(lastCall, lastNumber)
@@ -255,6 +259,7 @@ class BridgeService : Service(), BridgeConnection.Listener {
 
 	override fun onDestroy() {
 		contentResolver.unregisterContentObserver(contactsObserver)
+		networkWatch?.let { NetworkReport.unwatch(this, it) }
 		unregisterReceiver(phoneReceiver)
 		disconnect()
 		overlay.hide()

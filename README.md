@@ -56,6 +56,8 @@ Download from the [releases page](https://github.com/Moscow146/callbridge/releas
 
 Keyboard shortcuts in the PC app: Ctrl+Enter accepts a call, Ctrl+E ends it, Ctrl+M mutes the microphone and Ctrl+D turns off the caller's sound.
 
+With a VPN on the phone the bridge still talks to the PC over Wi-Fi. [How to check it and what the log shows](docs/NETWORK-CHECK.md).
+
 Keep Bluetooth headsets disconnected from the phone during calls on the PC: the HAL refuses to mute a Bluetooth headset's microphone, so it would stay live in the call.
 
 ## Build

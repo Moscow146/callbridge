@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Phone app: the log (`adb logcat -s CallBridge`) now shows which networks are up and whether the bridge socket is bound to Wi-Fi, and docs/NETWORK-CHECK.md has the steps for checking calls over Wi-Fi with a VPN.
+
 ## 0.4.0
 
 - Glass by the look of Apple materials on all three: the PC window, the phone app and the website. It is only the control layer; cards, lists and text stay solid.
