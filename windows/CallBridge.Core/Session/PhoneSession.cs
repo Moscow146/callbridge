@@ -14,6 +14,7 @@ public sealed class PhoneSession : IDisposable
 	readonly CancellationTokenSource cts = new();
 	SpeakerPlayer? speaker;
 	MicCapture? mic;
+	volatile EchoCanceller? echo;
 
 	public string DeviceName { get; private set; } = "";
 
@@ -23,6 +24,17 @@ public sealed class PhoneSession : IDisposable
 
 	/// <summary>Linear gain applied to the microphone before it is encoded, 1 = unchanged.</summary>
 	public float MicGain { get; set; } = 1f;
+
+	public bool EchoCancellation
+	{
+		get => echo != null;
+		set
+		{
+			if (value == EchoCancellation)
+				return;
+			echo = value ? new EchoCanceller() : null;
+		}
+	}
 
 	public event Action<PhoneState>? StateChanged;
 
@@ -85,6 +97,7 @@ public sealed class PhoneSession : IDisposable
 	{
 		if (Muted)
 			return;
+		echo?.Process(pcm);
 		var gain = MicGain;
 		if (gain != 1f)
 		{
@@ -128,7 +141,11 @@ public sealed class PhoneSession : IDisposable
 		{
 			case FrameType.Downlink:
 				if (!Deafened)
-					speaker?.Enqueue(decoder.Decode(frame.Payload));
+				{
+					var decoded = decoder.Decode(frame.Payload);
+					echo?.AddFarEnd(decoded);
+					speaker?.Enqueue(decoded);
+				}
 				break;
 			case FrameType.Ping:
 				_ = frames.WriteAsync(FrameType.Pong, frame.Payload, cts.Token);
