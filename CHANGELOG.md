@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 0.5.1
+
+- Magisk module: on Xiaomi/HyperOS the autostart permission (MIUI op 10008) was reset to "ignore" on every boot, so the link to the PC did not start after a reboot. The module now allows it at each boot, adds the app to the battery allowlist and, once the phone is unlocked, starts the link itself.
+
+Reflash the Magisk module and reboot; after the first unlock the PC link starts by itself.
+
 ## 0.5.0
 
 PC app
