@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- PC app: pressing a key on the on-screen keypad now plays a short local DTMF tone (two sine waves per the DTMF table, 140 ms with a soft fade in and out, kept quiet) on the selected output device, including * and #. The tone is played on the PC only and never goes into the microphone path of the call. The demo has a new `--demo keypad` scene.
+- PC app: the Keypad button lost its icon when switched on, leaving a plain blue circle, because it had no icon for the on state. It now keeps its icon in the contrasting theme color in the Dark, Light and High contrast themes, like Hold.
 - PC app: the microphone level bar under the microphone picker now moves when you speak, with or without a phone connected. It used to read the level only from the capture opened for a call, so it stayed empty until a call session existed. The window now measures the selected microphone itself while it is visible and releases it when the window is hidden to the tray or minimized, or when the phone connects. The bar takes the Gain slider into account, rises quickly and falls smoothly, and has an outline and a highlight color in high contrast.
 - PC app: echo cancellation is now an Apple-style switch with a short explanation instead of a standard checkbox. All switches get a pressed state (wider knob) and a springy knob slide, which is skipped when "Show animations in Windows" is off.
 - Phone app: fixed two crashes caused by the new animations: one on launch (an invalid view tag key) and one when a call started (reading the display from a service).
