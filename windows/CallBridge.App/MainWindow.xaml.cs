@@ -18,7 +18,10 @@ public partial class MainWindow : Window
 {
 	readonly AppSettings settings;
 	readonly CallBridgeServer server;
-	readonly DispatcherTimer levelTimer = new() { Interval = TimeSpan.FromMilliseconds(50) };
+	readonly DispatcherTimer levelTimer = new(DispatcherPriority.Render) { Interval = TimeSpan.FromMilliseconds(16) };
+	readonly MicMonitor monitor = new();
+	readonly LevelSmoother smoother = new();
+	readonly System.Diagnostics.Stopwatch levelClock = new();
 	readonly bool demo;
 	IReadOnlyList<Contact> contacts = [];
 	Contact? picked;
@@ -92,13 +95,18 @@ public partial class MainWindow : Window
 		}
 
 		tray = new TrayIcon(ShowFromTray, Quit);
-		levelTimer.Tick += (_, _) => MicLevel.Value = MeterValue(session?.MicLevel ?? 0);
+		levelTimer.Tick += (_, _) => UpdateLevel();
 		levelTimer.Start();
+		IsVisibleChanged += (_, _) => SyncMonitor();
+		StateChanged += (_, _) => SyncMonitor();
+		SyncMonitor();
 		metricsTimer.Tick += (_, _) => ShowMetrics();
 		metricsTimer.Start();
 		Closing += OnClosing;
 		Closed += (_, _) =>
 		{
+			levelTimer.Stop();
+			monitor.Dispose();
 			tray?.Dispose();
 			discovery?.Dispose();
 			server.Dispose();
@@ -108,7 +116,38 @@ public partial class MainWindow : Window
 
 	public bool Ready { get; }
 
-	static double MeterValue(float level) => level <= 0 ? 0 : Math.Clamp(1 + 20 * Math.Log10(level) / 60, 0, 1);
+	bool WindowShown => IsVisible && WindowState != WindowState.Minimized;
+
+	void SyncMonitor()
+	{
+		if (demo)
+			return;
+		if (WindowShown && session == null)
+		{
+			if (!monitor.Running)
+				monitor.Start(SelectedId(MicCombo));
+		}
+		else
+		{
+			monitor.Stop();
+		}
+		if (!WindowShown)
+		{
+			smoother.Reset();
+			MicLevel.Value = 0;
+		}
+	}
+
+	void UpdateLevel()
+	{
+		var elapsed = levelClock.Elapsed.TotalSeconds;
+		levelClock.Restart();
+		if (!WindowShown)
+			return;
+		var peak = session != null ? session.TakeMicPeak() : monitor.TakePeak();
+		var target = LevelMeter.ToMeter(peak, (float)MicGainSlider.Value);
+		MicLevel.Value = smoother.Update(target, Math.Min(elapsed, 0.1));
+	}
 
 	public void ShowFromTray()
 	{
@@ -173,6 +212,7 @@ public partial class MainWindow : Window
 	void OnPhoneConnected(PhoneSession s)
 	{
 		session = s;
+		monitor.Stop();
 		s.StateChanged += state => Dispatcher.Invoke(() => ShowState(state));
 		s.ContactsChanged += list => Dispatcher.Invoke(() => contacts = list);
 		s.CallModeChanged += mode => Dispatcher.Invoke(() => ShowCallMode(mode));
@@ -206,6 +246,7 @@ public partial class MainWindow : Window
 	{
 		MetricsText.Text = "";
 		session = null;
+		SyncMonitor();
 		StatusText.Text = Strings.Get("WaitingPhone");
 		StatusDot.SetResourceReference(Shape.FillProperty, "Orange");
 		Motion.Show(QrCard, true);
@@ -323,6 +364,8 @@ public partial class MainWindow : Window
 		settings.SpeakerId = SelectedId(SpeakerCombo);
 		settings.Save();
 		ApplyDevices();
+		if (session == null && monitor.Running)
+			monitor.Start(SelectedId(MicCombo));
 	}
 
 	void OnVolumeChanged(object sender, RoutedPropertyChangedEventArgs<double> e)

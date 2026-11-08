@@ -348,9 +348,9 @@
 		<Setter Property="Template">
 			<Setter.Value>
 				<ControlTemplate TargetType="ProgressBar">
-					<Grid Height="4">
-						<Border x:Name="PART_Track" CornerRadius="2" Background="{DynamicResource Separator}"/>
-						<Border x:Name="PART_Indicator" HorizontalAlignment="Left" CornerRadius="2" Background="{DynamicResource Green}"/>
+					<Grid Height="6">
+						<Border x:Name="PART_Track" CornerRadius="3" Background="{DynamicResource Separator}" BorderBrush="{DynamicResource MeterEdge}" BorderThickness="1"/>
+						<Border x:Name="PART_Indicator" HorizontalAlignment="Left" CornerRadius="3" Background="{DynamicResource MeterFill}"/>
 					</Grid>
 				</ControlTemplate>
 			</Setter.Value>
