@@ -73,6 +73,11 @@ class BridgeService : Service(), BridgeConnection.Listener {
 		registerReceiver(phoneReceiver, IntentFilter(TelephonyManager.ACTION_PHONE_STATE_CHANGED), RECEIVER_EXPORTED)
 		contentResolver.registerContentObserver(ContactsContract.Contacts.CONTENT_URI, true, contactsObserver)
 		CallRelay.onHoldChanged = { onHoldChanged(it) }
+		CallRelay.onHoldFailed = { main.post { holdFailed() } }
+	}
+
+	private fun holdFailed() {
+		connection?.sendControl(JSONObject().put("t", "holdFailed"))
 	}
 
 	private fun onHoldChanged(holding: Boolean) {
@@ -216,7 +221,7 @@ class BridgeService : Service(), BridgeConnection.Listener {
 				"dial" -> calls.dial(message.optString("number"))
 				"contacts" -> sendContacts()
 				"mode" -> setCallMode(message.optString("mode"))
-				"hold" -> CallRelay.hold(message.optBoolean("on", true))
+				"hold" -> if (!CallRelay.hold(message.optBoolean("on", true))) holdFailed()
 				"dtmf" -> Dtmf.parse(message.optString("digit"))?.let { CallRelay.dtmf(it) }
 			}
 		}
@@ -273,6 +278,7 @@ class BridgeService : Service(), BridgeConnection.Listener {
 		contentResolver.unregisterContentObserver(contactsObserver)
 		networkWatch?.let { NetworkReport.unwatch(this, it) }
 		CallRelay.onHoldChanged = null
+		CallRelay.onHoldFailed = null
 		unregisterReceiver(phoneReceiver)
 		disconnect()
 		overlay.hide()
