@@ -109,6 +109,69 @@ public class SessionTests
 	}
 
 	[Fact]
+	public async Task SendsHoldAndDtmf()
+	{
+		using var server = new CallBridgeServer("0123456789abcdef", 47815);
+		server.Start();
+		var session = new TaskCompletionSource<PhoneSession>();
+		server.PhoneConnected += s => session.TrySetResult(s);
+
+		using var client = new TcpClient();
+		await client.ConnectAsync(IPAddress.Loopback, server.Port);
+		var frames = new FrameStream(client.GetStream());
+		await frames.WriteAsync(FrameType.Hello, Json.Bytes(new Hello(Json.ProtocolVersion, "test", server.PairingCode)));
+		await frames.ReadAsync();
+		var phone = await session.Task.WaitAsync(TimeSpan.FromSeconds(5));
+
+		async Task<string> Next()
+		{
+			var frame = await frames.ReadAsync().WaitAsync(TimeSpan.FromSeconds(5));
+			return System.Text.Encoding.UTF8.GetString(frame!.Value.Payload);
+		}
+
+		await phone.SetHoldAsync(true);
+		Assert.Equal("""{"t":"hold","on":true}""", await Next());
+		await phone.SetHoldAsync(false);
+		Assert.Equal("""{"t":"hold","on":false}""", await Next());
+		await phone.SendDtmfAsync('5');
+		Assert.Equal("""{"t":"dtmf","digit":"5"}""", await Next());
+		await phone.SendDtmfAsync('#');
+		Assert.Equal("""{"t":"dtmf","digit":"#"}""", await Next());
+		await phone.SendDtmfAsync('x');
+		await phone.SendDtmfAsync('*');
+		Assert.Equal("""{"t":"dtmf","digit":"*"}""", await Next());
+	}
+
+	[Fact]
+	public void ValidatesDtmfSymbols()
+	{
+		foreach (var c in "0123456789*#abcdABCD")
+			Assert.True(Dtmf.IsValid(c));
+		foreach (var c in "eE+ -x")
+			Assert.False(Dtmf.IsValid(c));
+	}
+
+	[Fact]
+	public async Task ReceivesHeldState()
+	{
+		using var server = new CallBridgeServer("0123456789abcdef", 47816);
+		server.Start();
+		var received = new TaskCompletionSource<PhoneState>();
+		server.PhoneConnected += s => s.StateChanged += state => received.TrySetResult(state);
+
+		using var client = new TcpClient();
+		await client.ConnectAsync(IPAddress.Loopback, server.Port);
+		var frames = new FrameStream(client.GetStream());
+		await frames.WriteAsync(FrameType.Hello, Json.Bytes(new Hello(Json.ProtocolVersion, "test", server.PairingCode)));
+		await frames.ReadAsync();
+		await Task.Delay(200);
+		await frames.WriteAsync(FrameType.Control, System.Text.Encoding.UTF8.GetBytes("""{"t":"state","call":"held","number":"+1 555 0100"}"""));
+
+		var state = await received.Task.WaitAsync(TimeSpan.FromSeconds(5));
+		Assert.Equal(CallState.Held, state.Call);
+	}
+
+	[Fact]
 	public async Task AnswersDiscoveryQuery()
 	{
 		using var responder = new DiscoveryResponder("MY-PC", 47800, 47821);

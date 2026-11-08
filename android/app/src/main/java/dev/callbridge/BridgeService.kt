@@ -55,7 +55,7 @@ class BridgeService : Service(), BridgeConnection.Listener {
 			val number = intent.getStringExtra(TelephonyManager.EXTRA_INCOMING_NUMBER)
 			when (intent.getStringExtra(TelephonyManager.EXTRA_STATE)) {
 				TelephonyManager.EXTRA_STATE_RINGING -> onCallState("ringing", number)
-				TelephonyManager.EXTRA_STATE_OFFHOOK -> onCallState("active", number)
+				TelephonyManager.EXTRA_STATE_OFFHOOK -> onCallState(if (CallRelay.holding) "held" else "active", number)
 				TelephonyManager.EXTRA_STATE_IDLE -> onCallState("idle", null)
 			}
 		}
@@ -72,6 +72,16 @@ class BridgeService : Service(), BridgeConnection.Listener {
 		networkWatch = NetworkReport.watch(this)
 		registerReceiver(phoneReceiver, IntentFilter(TelephonyManager.ACTION_PHONE_STATE_CHANGED), RECEIVER_EXPORTED)
 		contentResolver.registerContentObserver(ContactsContract.Contacts.CONTENT_URI, true, contactsObserver)
+		CallRelay.onHoldChanged = { onHoldChanged(it) }
+	}
+
+	private fun onHoldChanged(holding: Boolean) {
+		main.post {
+			if (lastCall != "active" && lastCall != "held") return@post
+			lastCall = if (holding) "held" else "active"
+			sendState(lastCall, lastNumber)
+			syncCall()
+		}
 	}
 
 	override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -206,6 +216,8 @@ class BridgeService : Service(), BridgeConnection.Listener {
 				"dial" -> calls.dial(message.optString("number"))
 				"contacts" -> sendContacts()
 				"mode" -> setCallMode(message.optString("mode"))
+				"hold" -> CallRelay.hold(message.optBoolean("on", true))
+				"dtmf" -> Dtmf.parse(message.optString("digit"))?.let { CallRelay.dtmf(it) }
 			}
 		}
 	}
@@ -259,7 +271,11 @@ class BridgeService : Service(), BridgeConnection.Listener {
 
 	override fun onDestroy() {
 		contentResolver.unregisterContentObserver(contactsObserver)
+<<<<<<< HEAD
 		networkWatch?.let { NetworkReport.unwatch(this, it) }
+=======
+		CallRelay.onHoldChanged = null
+>>>>>>> origin/main
 		unregisterReceiver(phoneReceiver)
 		disconnect()
 		overlay.hide()
