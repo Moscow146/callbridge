@@ -119,6 +119,8 @@
 								AutomationProperties.Name="{local:L Gain}"/>
 						<TextBlock x:Name="MicGainText" Grid.Column="2" Style="{StaticResource Value}" Text="100%"/>
 					</Grid>
+					<CheckBox x:Name="EchoCheck" Content="{local:L EchoCancel}" Foreground="{DynamicResource Label}" Margin="2,10,0,0"
+							  Click="OnEchoClick" AutomationProperties.Name="{local:L EchoCancel}"/>
 				</StackPanel>
 			</Border>
 

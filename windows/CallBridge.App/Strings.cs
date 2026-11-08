@@ -23,6 +23,7 @@ public static class Strings
 		["Microphone"] = ("Microphone", "Микрофон"),
 		["MicMeter"] = ("Microphone level", "Уровень микрофона"),
 		["Gain"] = ("Gain", "Усиление"),
+		["EchoCancel"] = ("Echo cancellation (for speakers)", "Эхоподавление (для колонок)"),
 		["Output"] = ("Sound output", "Вывод звука"),
 		["Startup"] = ("Startup", "Запуск"),
 		["StartWithWindows"] = ("Start with Windows", "Запускать с Windows"),

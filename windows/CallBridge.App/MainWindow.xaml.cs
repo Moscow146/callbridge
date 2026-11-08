@@ -50,6 +50,7 @@ public partial class MainWindow : Window
 		VolumeText.Text = $"{settings.Volume * 100:0}%";
 		MicGainSlider.Value = settings.MicGain;
 		MicGainText.Text = $"{settings.MicGain * 100:0}%";
+		EchoCheck.IsChecked = settings.EchoCancellation;
 		AutostartSwitch.IsChecked = !demo && Autostart.Enabled;
 		AutostartSwitch.IsEnabled = !demo && Autostart.Supported;
 		loading = false;
@@ -174,6 +175,7 @@ public partial class MainWindow : Window
 		DialButton.IsEnabled = true;
 		ApplyDevices();
 		s.MicGain = (float)MicGainSlider.Value;
+		s.EchoCancellation = settings.EchoCancellation;
 		s.Muted = MuteButton.IsChecked == true;
 		s.Deafened = DeafenButton.IsChecked == true;
 	}
@@ -308,6 +310,14 @@ public partial class MainWindow : Window
 		MicGainText.Text = $"{e.NewValue * 100:0}%";
 		if (session != null)
 			session.MicGain = (float)e.NewValue;
+	}
+
+	void OnEchoClick(object sender, RoutedEventArgs e)
+	{
+		settings.EchoCancellation = EchoCheck.IsChecked == true;
+		settings.Save();
+		if (session != null)
+			session.EchoCancellation = settings.EchoCancellation;
 	}
 
 	void OnMuteClick(object sender, RoutedEventArgs e)
