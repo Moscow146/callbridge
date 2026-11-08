@@ -28,7 +28,7 @@
     <ApplicationIcon>Assets\app.ico</ApplicationIcon>
     <AssemblyName>CallBridge</AssemblyName>
     <Product>CallBridge</Product>
-    <Version>0.5.2</Version>
+    <Version>0.5.3</Version>
   </PropertyGroup>
 
 </Project>
