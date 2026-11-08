@@ -2,8 +2,12 @@
 
 ## Unreleased
 
+## 0.5.2
+
 - The call card and the dial suggestions show the contact's photo instead of initials when the phone has one; contacts without a photo keep the initials. The phone sends a 96x96 JPEG thumbnail on request (new `photo` control message, see docs/PROTOCOL.md), the PC asks only for the contacts it shows and caches the photos in memory and in `%APPDATA%\CallBridge\photos` (at most 2000 files, 32 MB).
 - Phone app: ringback tones (the beeps while the other side is being called) now come through to the PC for outgoing calls. The audio bridge starts once the call is off hook instead of only after the answer, and during the ringing the phone is quietened by turning the call volume to its minimum (a full device mute would silence the capture too); the full mute is applied after the answer as before.
+
+Reflash the Magisk module and reboot, then replace `CallBridge.exe`.
 
 ## 0.5.1
 
