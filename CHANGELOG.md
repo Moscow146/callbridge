@@ -2,7 +2,11 @@
 
 ## Unreleased
 
+## 0.5.3
+
 - PC app: fixed a crash when clicking a switch. The knob animation tried to animate a frozen transform from the control template ("Cannot animate the property X ... because this object is sealed or frozen"); it now animates a copy.
+
+Reflash the Magisk module and reboot, then replace `CallBridge.exe`.
 
 ## 0.5.2
 
