@@ -142,6 +142,8 @@
 								AutomationProperties.Name="{local:L Gain}"/>
 						<TextBlock x:Name="MicGainText" Grid.Column="2" Style="{StaticResource Value}" Text="100%"/>
 					</Grid>
+					<CheckBox x:Name="EchoCheck" Content="{local:L EchoCancel}" Foreground="{DynamicResource Label}" Margin="2,10,0,0"
+							  Click="OnEchoClick" AutomationProperties.Name="{local:L EchoCancel}"/>
 				</StackPanel>
 			</Border>
 
@@ -161,6 +163,18 @@
 						<TextBlock x:Name="VolumeText" Grid.Column="2" Style="{StaticResource Value}" Text="100%"/>
 					</Grid>
 				</StackPanel>
+			</Border>
+			<TextBlock Style="{StaticResource SectionHeader}" Text="{local:L Startup}"/>
+			<Border Style="{StaticResource Section}">
+				<Grid>
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="*"/>
+						<ColumnDefinition Width="Auto"/>
+					</Grid.ColumnDefinitions>
+					<TextBlock Style="{StaticResource Field}" Text="{local:L StartWithWindows}" TextWrapping="Wrap" Margin="0,0,12,0"/>
+					<ToggleButton x:Name="AutostartSwitch" Grid.Column="1" Style="{StaticResource SwitchToggle}" ToolTip="{local:L StartWithWindowsTip}"
+								  AutomationProperties.Name="{local:L StartWithWindows}" Click="OnAutostartClick"/>
+				</Grid>
 			</Border>
 			<Border Height="128" Visibility="{Binding Visibility, ElementName=CallActions}"/>
 		</StackPanel>
