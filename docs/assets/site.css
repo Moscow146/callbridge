@@ -745,3 +745,149 @@ code {
 .prose th {
 	font-weight: 600;
 }
+
+:root {
+	--ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+	--ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+.site-nav a,
+.button {
+	transition: background-color 0.2s var(--ease-out), filter 0.2s var(--ease-out), transform 0.35s var(--ease-spring);
+}
+
+.button:hover {
+	transform: translateY(-2px);
+}
+
+.button:active {
+	transform: translateY(0) scale(0.97);
+	transition-duration: 0.08s;
+}
+
+.site-nav a:active {
+	transform: scale(0.95);
+}
+
+.features li,
+.steps li,
+.requirements > div,
+.gallery figure {
+	transition: transform 0.4s var(--ease-out), box-shadow 0.4s var(--ease-out);
+}
+
+@media (hover: hover) {
+	.features li:hover,
+	.steps li:hover,
+	.requirements > div:hover,
+	.gallery figure:hover {
+		transform: translateY(-4px);
+		box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+	}
+}
+
+.features svg {
+	transition: transform 0.45s var(--ease-spring);
+}
+
+.features li:hover svg {
+	transform: scale(1.12) rotate(-4deg);
+}
+
+@keyframes rise {
+	from {
+		opacity: 0;
+		transform: translateY(1.25rem);
+	}
+
+	to {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+@keyframes drop {
+	from {
+		opacity: 0;
+		transform: translateY(-1rem);
+	}
+
+	to {
+		opacity: 1;
+		transform: none;
+	}
+}
+
+.site-header .wrap {
+	animation: drop 0.7s var(--ease-out) both;
+}
+
+.hero > div:first-child > * {
+	animation: rise 0.8s var(--ease-out) both;
+}
+
+.hero > div:first-child > :nth-child(2) {
+	animation-delay: 0.08s;
+}
+
+.hero > div:first-child > :nth-child(3) {
+	animation-delay: 0.16s;
+}
+
+.hero > div:first-child > :nth-child(4) {
+	animation-delay: 0.24s;
+}
+
+.hero-shots picture {
+	animation: rise 0.9s var(--ease-out) both;
+	animation-delay: 0.2s;
+}
+
+.hero-shots picture:last-child {
+	animation-delay: 0.32s;
+}
+
+.js .reveal {
+	opacity: 0;
+	transform: translateY(1.5rem);
+	transition: opacity 0.7s var(--ease-out), transform 0.7s var(--ease-out), box-shadow 0.4s var(--ease-out);
+	transition-delay: calc(var(--i, 0) * 60ms);
+}
+
+.js .reveal.shown {
+	opacity: 1;
+	transform: none;
+}
+
+.js .reveal.shown:hover {
+	transition-delay: 0s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	html {
+		scroll-behavior: auto;
+	}
+
+	*,
+	*::before,
+	*::after {
+		animation: none !important;
+		transition: none !important;
+	}
+
+	.js .reveal {
+		opacity: 1;
+		transform: none;
+	}
+
+	.button:hover,
+	.button:active,
+	.site-nav a:active,
+	.features li:hover,
+	.steps li:hover,
+	.requirements > div:hover,
+	.gallery figure:hover,
+	.features li:hover svg {
+		transform: none;
+	}
+}

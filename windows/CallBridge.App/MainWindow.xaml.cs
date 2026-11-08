@@ -175,8 +175,8 @@ public partial class MainWindow : Window
 		s.AudioRouteChanged += reason => Dispatcher.Invoke(() => ShowRoute(reason == null ? null : Strings.Format("AudioUnavailable", reason)));
 		StatusText.Text = Strings.Format("ConnectedTo", s.DeviceName);
 		StatusDot.SetResourceReference(Shape.FillProperty, "Green");
-		QrCard.Visibility = Visibility.Collapsed;
-		CallCard.Visibility = Visibility.Visible;
+		Motion.Show(QrCard, false);
+		Motion.Show(CallCard, true);
 		DialButton.IsEnabled = true;
 		ApplyDevices();
 		s.MicGain = (float)MicGainSlider.Value;
@@ -204,8 +204,8 @@ public partial class MainWindow : Window
 		session = null;
 		StatusText.Text = Strings.Get("WaitingPhone");
 		StatusDot.SetResourceReference(Shape.FillProperty, "Orange");
-		QrCard.Visibility = Visibility.Visible;
-		CallCard.Visibility = Visibility.Collapsed;
+		Motion.Show(QrCard, true);
+		Motion.Show(CallCard, false);
 		DialButton.IsEnabled = false;
 		callMode = CallMode.Pc;
 		ShowState(new PhoneState(CallState.Idle, null, null));
@@ -239,6 +239,7 @@ public partial class MainWindow : Window
 	void ShowState(PhoneState state)
 	{
 		var ringingAgain = state.Call == CallState.Ringing && lastState.Call == CallState.Ringing;
+		var changed = state.Call != lastState.Call || state.Name != lastState.Name || state.Number != lastState.Number;
 		lastState = state;
 		var who = state.Name ?? state.Number ?? Strings.Get("UnknownNumber");
 		var idle = state.Call == CallState.Idle;
@@ -258,19 +259,24 @@ public partial class MainWindow : Window
 		ModeButton.Content = Strings.Get(callMode == CallMode.Phone ? "ToPc" : "ToPhone");
 		ModeButton.ToolTip = moveLabel;
 		AutomationProperties.SetName(ModeButton, moveLabel);
-		ModeButton.Visibility = state.Call == CallState.Active ? Visibility.Visible : Visibility.Collapsed;
+		Motion.Show(ModeButton, state.Call == CallState.Active, 6);
 		var established = state.Call is CallState.Active or CallState.Held;
-		InCallExtras.Visibility = established ? Visibility.Visible : Visibility.Collapsed;
+		Motion.Show(InCallExtras, established);
 		HoldButton.IsChecked = state.Call == CallState.Held;
-		KeypadPanel.Visibility = established && KeypadButton.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
+		Motion.Show(KeypadPanel, established && KeypadButton.IsChecked == true);
 		if (!established)
 			KeypadButton.IsChecked = false;
-		RingingActions.Visibility = ringing ? Visibility.Visible : Visibility.Collapsed;
-		CallActions.Visibility = state.Call is CallState.Active or CallState.Dialing or CallState.Held ? Visibility.Visible : Visibility.Collapsed;
-		DialPanel.Visibility = idle ? Visibility.Visible : Visibility.Collapsed;
+		Motion.Show(RingingActions, ringing);
+		Motion.Show(CallActions, state.Call is CallState.Active or CallState.Dialing or CallState.Held, 16);
+		Motion.Show(DialPanel, idle);
 		var initials = idle ? "" : Initials(state.Name);
 		AvatarText.Text = initials;
 		AvatarGlyph.Visibility = initials.Length == 0 ? Visibility.Visible : Visibility.Collapsed;
+		if (changed && IsLoaded)
+		{
+			Motion.Refresh(CallTitle);
+			Motion.Refresh(CallSub);
+		}
 	}
 
 	static string Initials(string? name)
@@ -379,7 +385,7 @@ public partial class MainWindow : Window
 	void OnHoldClick(object sender, RoutedEventArgs e) => _ = session?.SetHoldAsync(HoldButton.IsChecked == true);
 
 	void OnKeypadClick(object sender, RoutedEventArgs e) =>
-		KeypadPanel.Visibility = KeypadButton.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
+		Motion.Show(KeypadPanel, KeypadButton.IsChecked == true);
 
 	void OnKeypadDigit(object sender, RoutedEventArgs e)
 	{
