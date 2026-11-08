@@ -141,6 +141,18 @@
 					</Grid>
 				</StackPanel>
 			</Border>
+			<TextBlock Style="{StaticResource SectionHeader}" Text="{local:L Startup}"/>
+			<Border Style="{StaticResource Section}">
+				<Grid>
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width="*"/>
+						<ColumnDefinition Width="Auto"/>
+					</Grid.ColumnDefinitions>
+					<TextBlock Style="{StaticResource Field}" Text="{local:L StartWithWindows}" TextWrapping="Wrap" Margin="0,0,12,0"/>
+					<ToggleButton x:Name="AutostartSwitch" Grid.Column="1" Style="{StaticResource SwitchToggle}" ToolTip="{local:L StartWithWindowsTip}"
+								  AutomationProperties.Name="{local:L StartWithWindows}" Click="OnAutostartClick"/>
+				</Grid>
+			</Border>
 			<Border Height="128" Visibility="{Binding Visibility, ElementName=CallActions}"/>
 		</StackPanel>
 	</ScrollViewer>

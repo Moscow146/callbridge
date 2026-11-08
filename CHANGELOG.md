@@ -3,6 +3,7 @@
 ## Unreleased
 
 - PC app: optional echo cancellation for the microphone (a checkbox under Microphone, off by default). It subtracts the phone's voice, as played on the PC speakers, from the microphone with an adaptive filter, so the caller hears less of themselves when you use speakers instead of headphones. Headphones are still the best fix.
+- PC app: a "Start with Windows" switch under Startup starts CallBridge at sign-in, minimized to the tray. It is kept in the current user's Run key, so nothing needs admin rights.
 
 ## 0.4.0
 

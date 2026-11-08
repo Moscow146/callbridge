@@ -1,4 +1,5 @@
 ﻿using System.Windows;
+using CallBridge.Core.Startup;
 
 namespace CallBridge.App;
 
@@ -48,7 +49,8 @@ public partial class App : Application
 				Dispatcher.Invoke(window.ShowFromTray);
 		}) { IsBackground = true };
 		waiter.Start();
-		window.Show();
+		if (!AutostartCommand.StartsMinimized(e.Args))
+			window.Show();
 	}
 
 	protected override void OnExit(ExitEventArgs e)
