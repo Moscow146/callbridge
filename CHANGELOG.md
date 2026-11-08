@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- PC app: the microphone level bar now always reads from its own monitor while the window is visible; with the phone connected it stayed at zero before.
+
 - Outgoing calls: the PC no longer shows "Unknown number" and no longer says "In call" before the other side answers. The phone took the number only from the phone-state broadcast, which carries no number for outgoing calls (and none for incoming ones without call log access), and reported every off-hook call as active. It now follows the Telecom call itself: the number comes from the call handle, and the state is "Dialing…" while connecting, "Calling…" while it rings, "In call" only after the answer, then "On hold". The `state` message gets an optional `stage` field, older PC apps ignore it. Audio capture still starts only in the active state.
 
 - Phone app: the link to the PC now comes back on its own. The service is started again after the phone boots and after the app is updated (a new `StartReceiver`; it only starts when the link was on and the phone is still paired, and "Stop" turns that off). Before, installing a new build killed the service and it stayed dead until the app was opened, so the PC showed "Phone not connected". The in-call service also starts the link when a call begins, in case MIUI killed it without restarting it. A call that is already in progress when the service starts is picked up too. If Android refuses the microphone foreground type from the background, the service starts with a plain special-use type and switches to the microphone type when call audio starts.
