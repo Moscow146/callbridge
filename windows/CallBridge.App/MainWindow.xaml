@@ -66,6 +66,29 @@
 								Width="84" ToolTip="{local:L AcceptTip}" Click="OnAnswer"/>
 					</StackPanel>
 
+					<StackPanel x:Name="InCallExtras" Margin="0,18,0,0" Visibility="Collapsed">
+						<StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+							<ToggleButton x:Name="HoldButton" Style="{StaticResource CallToggle}" Tag="&#xE769;" local:CallActionGlyph.Checked="&#xE768;" Content="{local:L Hold}"
+										  ToolTip="{local:L HoldTip}" Width="84" Margin="0,0,16,0" Click="OnHoldClick"/>
+							<ToggleButton x:Name="KeypadButton" Style="{StaticResource CallToggle}" Tag="&#xE75F;" Content="{local:L Keypad}"
+										  ToolTip="{local:L KeypadTip}" Width="84" Click="OnKeypadClick"/>
+						</StackPanel>
+						<UniformGrid x:Name="KeypadPanel" Columns="3" Margin="0,14,0,0" MaxWidth="240" Visibility="Collapsed">
+							<Button Content="1" Tag="1" Style="{StaticResource PushButton}" Height="44" Margin="4" Click="OnKeypadDigit"/>
+							<Button Content="2" Tag="2" Style="{StaticResource PushButton}" Height="44" Margin="4" Click="OnKeypadDigit"/>
+							<Button Content="3" Tag="3" Style="{StaticResource PushButton}" Height="44" Margin="4" Click="OnKeypadDigit"/>
+							<Button Content="4" Tag="4" Style="{StaticResource PushButton}" Height="44" Margin="4" Click="OnKeypadDigit"/>
+							<Button Content="5" Tag="5" Style="{StaticResource PushButton}" Height="44" Margin="4" Click="OnKeypadDigit"/>
+							<Button Content="6" Tag="6" Style="{StaticResource PushButton}" Height="44" Margin="4" Click="OnKeypadDigit"/>
+							<Button Content="7" Tag="7" Style="{StaticResource PushButton}" Height="44" Margin="4" Click="OnKeypadDigit"/>
+							<Button Content="8" Tag="8" Style="{StaticResource PushButton}" Height="44" Margin="4" Click="OnKeypadDigit"/>
+							<Button Content="9" Tag="9" Style="{StaticResource PushButton}" Height="44" Margin="4" Click="OnKeypadDigit"/>
+							<Button Content="*" Tag="*" Style="{StaticResource PushButton}" Height="44" Margin="4" Click="OnKeypadDigit"/>
+							<Button Content="0" Tag="0" Style="{StaticResource PushButton}" Height="44" Margin="4" Click="OnKeypadDigit"/>
+							<Button Content="#" Tag="#" Style="{StaticResource PushButton}" Height="44" Margin="4" Click="OnKeypadDigit"/>
+						</UniformGrid>
+					</StackPanel>
+
 					<StackPanel x:Name="DialPanel" Margin="0,18,0,0">
 						<Grid>
 							<Grid.ColumnDefinitions>

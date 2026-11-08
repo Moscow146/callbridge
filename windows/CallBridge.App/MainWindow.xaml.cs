@@ -259,6 +259,12 @@ public partial class MainWindow : Window
 		ModeButton.ToolTip = moveLabel;
 		AutomationProperties.SetName(ModeButton, moveLabel);
 		ModeButton.Visibility = state.Call == CallState.Active ? Visibility.Visible : Visibility.Collapsed;
+		var established = state.Call is CallState.Active or CallState.Held;
+		InCallExtras.Visibility = established ? Visibility.Visible : Visibility.Collapsed;
+		HoldButton.IsChecked = state.Call == CallState.Held;
+		KeypadPanel.Visibility = established && KeypadButton.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
+		if (!established)
+			KeypadButton.IsChecked = false;
 		RingingActions.Visibility = ringing ? Visibility.Visible : Visibility.Collapsed;
 		CallActions.Visibility = state.Call is CallState.Active or CallState.Dialing or CallState.Held ? Visibility.Visible : Visibility.Collapsed;
 		DialPanel.Visibility = idle ? Visibility.Visible : Visibility.Collapsed;
@@ -369,6 +375,17 @@ public partial class MainWindow : Window
 	void OnReject(object sender, RoutedEventArgs e) => _ = session?.SendCommandAsync("reject");
 
 	void OnHangup(object sender, RoutedEventArgs e) => _ = session?.SendCommandAsync("hangup");
+
+	void OnHoldClick(object sender, RoutedEventArgs e) => _ = session?.SetHoldAsync(HoldButton.IsChecked == true);
+
+	void OnKeypadClick(object sender, RoutedEventArgs e) =>
+		KeypadPanel.Visibility = KeypadButton.IsChecked == true ? Visibility.Visible : Visibility.Collapsed;
+
+	void OnKeypadDigit(object sender, RoutedEventArgs e)
+	{
+		if (sender is Button { Tag: string { Length: 1 } digit })
+			_ = session?.SendDtmfAsync(digit[0]);
+	}
 
 	void OnModeClick(object sender, RoutedEventArgs e) => _ = session?.SetCallModeAsync(callMode == CallMode.Phone ? CallMode.Pc : CallMode.Phone);
 
