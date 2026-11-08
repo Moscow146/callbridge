@@ -9,7 +9,7 @@ PC app
 - Hold and a DTMF keypad in the call card. Keys also play a short local tone. The network can refuse hold (Android reports CALL_HOLD_FAILED, as on the 0890 test number); the window now says so instead of showing a hold that never happened.
 - Optional echo cancellation for the microphone, off by default, now an Apple-style switch with an explanation. All switches get a pressed state and a springy knob.
 - The microphone level bar moves with your voice, also with a phone connected (it used to stay empty).
-- The status bar shows the estimated delay, jitter and late frames during a call, and a summary is written to `%APPDATA%\CallBridgeudio.log` every 5 seconds.
+- The status bar shows the estimated delay, jitter and late frames during a call, and a summary is written to `%APPDATA%\CallBridge\audio.log` every 5 seconds.
 - Outgoing calls show the number instead of "Unknown number" and say "Dialing..." / "Calling..." until the other side answers, then "In call".
 - When the phone does not confirm "To phone" / "To PC" within 3 seconds the window says so.
 - SF Pro is used when it is already installed (it is not bundled), spring motion tied to frame time for 120 to 240 Hz displays, and new screenshots.
