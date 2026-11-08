@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- PC app: optional echo cancellation for the microphone (a checkbox under Microphone, off by default). It subtracts the phone's voice, as played on the PC speakers, from the microphone with an adaptive filter, so the caller hears less of themselves when you use speakers instead of headphones. Headphones are still the best fix.
+
 ## 0.4.0
 
 - Glass by the look of Apple materials on all three: the PC window, the phone app and the website. It is only the control layer; cards, lists and text stay solid.
