@@ -1,4 +1,5 @@
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -17,6 +18,8 @@ static class Motion
 	public static void Start()
 	{
 		Timeline.DesiredFrameRateProperty.OverrideMetadata(typeof(Timeline), new FrameworkPropertyMetadata(FrameRate));
+		EventManager.RegisterClassHandler(typeof(ToggleButton), ToggleButton.CheckedEvent, new RoutedEventHandler((s, _) => Slide((ToggleButton)s, true)), true);
+		EventManager.RegisterClassHandler(typeof(ToggleButton), ToggleButton.UncheckedEvent, new RoutedEventHandler((s, _) => Slide((ToggleButton)s, false)), true);
 		EventManager.RegisterClassHandler(typeof(ButtonBase), UIElement.PreviewMouseLeftButtonDownEvent, new MouseButtonEventHandler((s, _) => Press((ButtonBase)s, 0.94)), true);
 		EventManager.RegisterClassHandler(typeof(ButtonBase), UIElement.PreviewMouseLeftButtonUpEvent, new MouseButtonEventHandler((s, _) => Release((ButtonBase)s)), true);
 		EventManager.RegisterClassHandler(typeof(ButtonBase), UIElement.LostMouseCaptureEvent, new MouseEventHandler((s, _) => Release((ButtonBase)s)), true);
@@ -26,6 +29,14 @@ static class Motion
 				Press((ButtonBase)s, 0.94);
 		}), true);
 		EventManager.RegisterClassHandler(typeof(ButtonBase), UIElement.PreviewKeyUpEvent, new KeyEventHandler((s, _) => Release((ButtonBase)s)), true);
+	}
+
+	static void Slide(ToggleButton toggle, bool on)
+	{
+		if (!Enabled || !toggle.IsLoaded || toggle.Template?.FindName("Knob", toggle) is not Border { RenderTransform: TranslateTransform move })
+			return;
+		var from = on ? -20 : 20;
+		move.BeginAnimation(TranslateTransform.XProperty, new DoubleAnimation(from, 0, TimeSpan.FromMilliseconds(320)) { EasingFunction = Spring, FillBehavior = FillBehavior.Stop });
 	}
 
 	public static void Show(UIElement element, bool visible, double distance = 10)
