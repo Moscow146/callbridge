@@ -27,10 +27,10 @@ public partial class MainWindow
 	{
 		Height = scene switch
 		{
-			"pairing" => 830,
+			"pairing" => 960,
 			"pairingscroll" => 560,
-			"ringing" => 690,
-			"call" => 690,
+			"ringing" => 960,
+			"call" => 1020,
 			"keypad" => 900,
 			"callscroll" => 540,
 			_ => 660,
