@@ -41,6 +41,7 @@ class ScanActivity : ComponentActivity() {
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 		setContentView(R.layout.activity_scan)
+		SystemFont.apply(findViewById(android.R.id.content))
 		preview = findViewById(R.id.preview)
 		hint = findViewById(R.id.hint)
 		openSettings = findViewById(R.id.open_settings)

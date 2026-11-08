@@ -103,7 +103,7 @@ body {
 	margin: 0;
 	background: var(--bg);
 	color: var(--label);
-	font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", sans-serif;
+	font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "SF Pro", system-ui, "Segoe UI", Roboto, "Noto Sans", sans-serif;
 	font-size: 1.0625rem;
 	line-height: 1.5;
 }

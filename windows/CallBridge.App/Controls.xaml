@@ -4,7 +4,7 @@
 
 	<local:PillRadiusConverter x:Key="Pill"/>
 
-	<FontFamily x:Key="UiFont">Segoe UI Variable Text, Segoe UI</FontFamily>
+	<FontFamily x:Key="UiFont">SF Pro Text, SF Pro, SF Pro Display, Segoe UI Variable Text, Segoe UI</FontFamily>
 	<FontFamily x:Key="IconFont">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>
 
 	<DropShadowEffect x:Key="GlassShadowMica" BlurRadius="20" ShadowDepth="5" Direction="270" Opacity="0.28" Color="#FF000000"/>
