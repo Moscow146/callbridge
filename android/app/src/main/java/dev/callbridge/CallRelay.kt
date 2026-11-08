@@ -3,7 +3,6 @@ package dev.callbridge
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
 import android.telecom.Call
 import android.telecom.InCallService
 import android.util.Log
