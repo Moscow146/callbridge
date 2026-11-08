@@ -4,6 +4,7 @@ import android.os.Handler
 import android.os.Looper
 import android.telecom.Call
 import android.telecom.InCallService
+import android.util.Log
 
 private const val DTMF_TONE_MS = 160L
 
@@ -49,7 +50,9 @@ object CallRelay {
 	val holding: Boolean get() = current()?.state == Call.STATE_HOLDING
 
 	fun hold(on: Boolean): Boolean {
-		val call = current() ?: return false
+		val call = current()
+		Log.i("CallBridge", "hold on=$on calls=${calls.size} state=${call?.state} canHold=${call?.details?.can(Call.Details.CAPABILITY_HOLD)}")
+		if (call == null) return false
 		if (on) {
 			if (call.state != Call.STATE_ACTIVE || !call.details.can(Call.Details.CAPABILITY_HOLD)) return false
 			call.hold()
