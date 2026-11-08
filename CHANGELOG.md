@@ -3,11 +3,13 @@
 ## Unreleased
 
 - SF Pro in the PC app, the phone app and the website, used only when it is already installed on the device (SF is Apple's proprietary font, so it is not bundled or hosted anywhere). Without it the PC app uses Segoe UI Variable, the phone app uses Roboto and the website uses the system font, with the same sizes and spacing.
+- Motion on all three: spring and eased transitions tied to frame time instead of a fixed rate, so they stay smooth at 120 to 240 Hz. The phone app springs its header, sections, status badge and buttons in, fades the call mode pill in and out, and asks Android for the display mode with the highest refresh rate. The PC window fades and slides cards and call buttons in, presses buttons with a spring, and asks WPF for up to 240 frames per second while animating. The website has hover lifts, scroll reveal and a staggered entrance, using only transform and opacity. All of it is switched off by the system "remove animations" setting on Android, "Show animations in Windows" on the PC and "prefers-reduced-motion" on the website.
 - Phone app: the log (`adb logcat -s CallBridge`) now shows which networks are up and whether the bridge socket is bound to Wi-Fi, and docs/NETWORK-CHECK.md has the steps for checking calls over Wi-Fi with a VPN.
 - Hold and a keypad for DTMF tones in the PC window, with matching `hold` and `dtmf` control messages. The phone app now registers a non-UI in-call service for them, so reflash the Magisk module (it adds the `CONTROL_INCALL_EXPERIENCE` permission) and reboot.
 - PC app: the status bar shows the estimated audio delay, jitter and late frames during a call. The PC pings the phone every two seconds to measure the round trip, and a summary line (delay, round trip, jitter, late frames, buffer trims) is written to `%APPDATA%\CallBridgeudio.log` every five seconds.
 - PC app: optional echo cancellation for the microphone (a checkbox under Microphone, off by default). It subtracts the phone's voice, as played on the PC speakers, from the microphone with an adaptive filter, so the caller hears less of themselves when you use speakers instead of headphones. Headphones are still the best fix.
 - PC app: a "Start with Windows" switch under Startup starts CallBridge at sign-in, minimized to the tray. It is kept in the current user's Run key, so nothing needs admin rights.
+- PC app: "Add to Start menu" and "Add to desktop" switches under Startup create or remove a CallBridge shortcut for the running CallBridge.exe in the current user's folders, so nothing needs admin rights.
 
 ## 0.4.0
 

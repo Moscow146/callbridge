@@ -31,8 +31,10 @@ class CallModeOverlay(private val context: Context, private val onToggle: () -> 
 	fun show(mode: String) {
 		if (!Settings.canDrawOverlays(context)) return
 		val view = pill ?: create().also {
+			Motion.requestHighRefresh(context, layout)
 			windows.addView(it, layout)
 			pill = it
+			Motion.appear(it, 0, 16f)
 		}
 		val text = label ?: return
 		text.setText(if (mode == CallMode.PC) R.string.mode_on_pc else R.string.mode_on_phone)
@@ -41,9 +43,16 @@ class CallModeOverlay(private val context: Context, private val onToggle: () -> 
 	}
 
 	fun hide() {
-		pill?.let { windows.removeView(it) }
+		val view = pill ?: return
 		pill = null
 		label = null
+		if (!Motion.enabled(context)) {
+			windows.removeView(view)
+			return
+		}
+		view.animate().alpha(0f).scaleX(0.9f).scaleY(0.9f).setDuration(160).withEndAction {
+			if (view.isAttachedToWindow) windows.removeView(view)
+		}.start()
 	}
 
 	@SuppressLint("ClickableViewAccessibility")

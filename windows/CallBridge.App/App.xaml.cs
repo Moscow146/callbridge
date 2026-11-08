@@ -14,6 +14,7 @@ public partial class App : Application
 	protected override void OnStartup(StartupEventArgs e)
 	{
 		base.OnStartup(e);
+		Motion.Start();
 		var themeIndex = Array.IndexOf(e.Args, "--theme");
 		var transparencyIndex = Array.IndexOf(e.Args, "--transparency");
 		bool? transparency = transparencyIndex >= 0 && transparencyIndex + 1 < e.Args.Length ? e.Args[transparencyIndex + 1] != "off" : null;

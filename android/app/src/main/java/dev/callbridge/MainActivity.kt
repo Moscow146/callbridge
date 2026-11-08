@@ -118,7 +118,20 @@ class MainActivity : Activity() {
 		accessOverlay.setOnClickListener {
 			startActivity(Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName")))
 		}
+		Motion.requestHighRefresh(window)
+		listOf(primary, accessPhone, accessOverlay, findViewById<View>(R.id.pair_other)).forEach { Motion.pressable(it) }
+		if (savedInstanceState == null) playEntrance()
 		acceptDeepLink(intent)
+	}
+
+	private fun playEntrance() {
+		Motion.appear(header, 0, -24f)
+		Motion.appear(bottomBar, 80, 32f)
+		for (i in 0 until content.childCount) {
+			Motion.appear(content.getChildAt(i), 60L + i * 45L, 28f)
+		}
+		header.invalidateFor(1200)
+		bottomBar.invalidateFor(1200)
 	}
 
 	override fun onNewIntent(intent: Intent) {
@@ -179,7 +192,10 @@ class MainActivity : Activity() {
 			running -> Triple(R.color.orange, R.drawable.ic_sync, R.string.title_connecting)
 			else -> Triple(R.color.gray, R.drawable.ic_close, R.string.title_disconnected)
 		}
+		val tintChanged = badge.tag != tint
+		badge.tag = tint
 		badge.backgroundTintList = getColorStateList(tint)
+		if (tintChanged && badge.isLaidOut) Motion.pop(badge)
 		icon.setImageResource(glyph)
 		title.setText(heading)
 		detail.text = if (pairing == null) getString(R.string.hint_unpaired) else BridgeState.status.ifEmpty { pairing.name }
@@ -201,7 +217,8 @@ class MainActivity : Activity() {
 		accessSection.visibility = visibleIf(needsPhone || needsOverlay)
 		pairSection.visibility = visibleIf(pairing != null)
 		footer.visibility = visibleIf(pairing != null)
-		refreshGlass()
+		header.invalidateFor(700)
+		bottomBar.invalidateFor(700)
 	}
 
 	private fun visibleIf(condition: Boolean) = if (condition) View.VISIBLE else View.GONE
