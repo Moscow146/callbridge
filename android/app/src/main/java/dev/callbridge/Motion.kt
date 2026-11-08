@@ -38,14 +38,17 @@ object Motion {
 	}
 
 	fun spring(view: View, property: DynamicAnimation.ViewProperty, target: Float, stiffness: Float = 380f, damping: Float = 0.78f, velocity: Float = 0f): SpringAnimation {
+		@Suppress("UNCHECKED_CAST")
+		val springs = (view.getTag(R.id.motion_springs) as? HashMap<Int, SpringAnimation>)
+			?: HashMap<Int, SpringAnimation>().also { view.setTag(R.id.motion_springs, it) }
 		val key = property.hashCode()
-		val existing = view.getTag(key) as? SpringAnimation
+		val existing = springs[key]
 		existing?.cancel()
 		val animation = SpringAnimation(view, property).apply {
 			spring = SpringForce(target).setStiffness(stiffness).setDampingRatio(damping)
 			setStartVelocity(velocity)
 		}
-		view.setTag(key, animation)
+		springs[key] = animation
 		animation.start()
 		return animation
 	}
