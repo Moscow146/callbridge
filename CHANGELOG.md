@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Phone app: ringback tones (the beeps while the other side is being called) now come through to the PC for outgoing calls. The audio bridge starts once the call is off hook instead of only after the answer, and during the ringing the phone is quietened by turning the call volume to its minimum (a full device mute would silence the capture too); the full mute is applied after the answer as before.
+
 ## 0.5.1
 
 - Magisk module: on Xiaomi/HyperOS the autostart permission (MIUI op 10008) was reset to "ignore" on every boot, so the link to the PC did not start after a reboot. The module now allows it at each boot, adds the app to the battery allowlist and, once the phone is unlocked, starts the link itself.

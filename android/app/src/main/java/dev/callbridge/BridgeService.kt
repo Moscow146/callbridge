@@ -44,6 +44,7 @@ class BridgeService : Service(), BridgeConnection.Listener {
 	private var stopping = false
 	private var retryPending = false
 	private var failures = 0
+	private var offHook = false
 	private var microphoneForeground = false
 	private var wifiLock: android.net.wifi.WifiManager.WifiLock? = null
 	private val reconnectTask = Runnable {
@@ -66,8 +67,15 @@ class BridgeService : Service(), BridgeConnection.Listener {
 			val number = intent.getStringExtra(TelephonyManager.EXTRA_INCOMING_NUMBER)
 			when (intent.getStringExtra(TelephonyManager.EXTRA_STATE)) {
 				TelephonyManager.EXTRA_STATE_RINGING -> onCallState("ringing", number)
-				TelephonyManager.EXTRA_STATE_OFFHOOK -> onCallState(CallRelay.phase ?: "connecting", number)
-				TelephonyManager.EXTRA_STATE_IDLE -> onCallState("idle", null)
+				TelephonyManager.EXTRA_STATE_OFFHOOK -> {
+					offHook = true
+					onCallState(CallRelay.phase ?: "connecting", number)
+					main.post { syncCall() }
+				}
+				TelephonyManager.EXTRA_STATE_IDLE -> {
+					offHook = false
+					onCallState("idle", null)
+				}
 			}
 		}
 	}
@@ -143,7 +151,10 @@ class BridgeService : Service(), BridgeConnection.Listener {
 		if (lastCall != "idle") return
 		lastCall = when (getSystemService(TelephonyManager::class.java).callState) {
 			TelephonyManager.CALL_STATE_RINGING -> "ringing"
-			TelephonyManager.CALL_STATE_OFFHOOK -> callOf(CallRelay.phase ?: "active")
+			TelephonyManager.CALL_STATE_OFFHOOK -> {
+				offHook = true
+				callOf(CallRelay.phase ?: "active")
+			}
 			else -> "idle"
 		}
 	}
@@ -197,7 +208,7 @@ class BridgeService : Service(), BridgeConnection.Listener {
 			.setContentTitle(getString(R.string.app_name))
 			.setContentText(getString(R.string.notification_text, pairing?.name.orEmpty()))
 			.setOngoing(true)
-		if (lastCall == "active" && BridgeState.connected) {
+		if (audioLive()) {
 			val toggle = PendingIntent.getService(
 				this, 0, Intent(this, BridgeService::class.java).setAction(ACTION_TOGGLE_MODE),
 				PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
@@ -218,9 +229,12 @@ class BridgeService : Service(), BridgeConnection.Listener {
 		syncCall()
 	}
 
+	private fun audioLive() = (lastCall == "active" || (lastCall == "dialing" && lastStage == "dialing" && offHook)) && BridgeState.connected
+
 	private fun syncCall() {
-		val inCall = lastCall == "active" && BridgeState.connected
+		val inCall = audioLive()
 		if (inCall && callMode == CallMode.PC) startCapture() else stopCapture()
+		if (lastCall == "active" && capture != null) muter.mute()
 		if (inCall) overlay.show(callMode) else overlay.hide()
 		if (BridgeState.running) getSystemService(NotificationManager::class.java).notify(NOTIFICATION_ID, buildNotification())
 		connection?.sendControl(JSONObject().put("t", "mode").put("mode", callMode))
@@ -348,7 +362,7 @@ class BridgeService : Service(), BridgeConnection.Listener {
 		uplink = UplinkPlayer(this) { reason ->
 			link.sendControl(JSONObject().put("t", "audio").put("route", "unavailable").put("reason", reason))
 		}.also { it.start() }
-		muter.mute()
+		if (lastCall == "active") muter.mute() else muter.duck()
 	}
 
 	private fun stopCapture() {
