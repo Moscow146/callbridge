@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-- Phone app: fixed a crash on launch caused by the new spring animations (an invalid view tag key).
+- Phone app: fixed two crashes caused by the new animations: one on launch (an invalid view tag key) and one when a call started (reading the display from a service).
 
 - SF Pro in the PC app, the phone app and the website, used only when it is already installed on the device (SF is Apple's proprietary font, so it is not bundled or hosted anywhere). Without it the PC app uses Segoe UI Variable, the phone app uses Roboto and the website uses the system font, with the same sizes and spacing.
 - Motion on all three: spring and eased transitions tied to frame time instead of a fixed rate, so they stay smooth at 120 to 240 Hz. The phone app springs its header, sections, status badge and buttons in, fades the call mode pill in and out, and asks Android for the display mode with the highest refresh rate. The PC window fades and slides cards and call buttons in, presses buttons with a spring, and asks WPF for up to 240 frames per second while animating. The website has hover lifts, scroll reveal and a staggered entrance, using only transform and opacity. All of it is switched off by the system "remove animations" setting on Android, "Show animations in Windows" on the PC and "prefers-reduced-motion" on the website.
