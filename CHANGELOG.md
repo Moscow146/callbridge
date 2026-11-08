@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- PC app: echo cancellation is now an Apple-style switch with a short explanation instead of a standard checkbox. All switches get a pressed state (wider knob) and a springy knob slide, which is skipped when "Show animations in Windows" is off.
 - Phone app: fixed two crashes caused by the new animations: one on launch (an invalid view tag key) and one when a call started (reading the display from a service).
 
 - SF Pro in the PC app, the phone app and the website, used only when it is already installed on the device (SF is Apple's proprietary font, so it is not bundled or hosted anywhere). Without it the PC app uses Segoe UI Variable, the phone app uses Roboto and the website uses the system font, with the same sizes and spacing.
