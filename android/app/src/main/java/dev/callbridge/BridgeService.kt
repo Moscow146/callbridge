@@ -271,11 +271,8 @@ class BridgeService : Service(), BridgeConnection.Listener {
 
 	override fun onDestroy() {
 		contentResolver.unregisterContentObserver(contactsObserver)
-<<<<<<< HEAD
 		networkWatch?.let { NetworkReport.unwatch(this, it) }
-=======
 		CallRelay.onHoldChanged = null
->>>>>>> origin/main
 		unregisterReceiver(phoneReceiver)
 		disconnect()
 		overlay.hide()
