@@ -31,6 +31,7 @@ private val PERMISSIONS = arrayOf(
 private const val REQUEST_ACCESS = 1
 private const val REQUEST_SCAN = 2
 private const val KEY_ASKED = "asked_for_access"
+private const val KEY_BATTERY_ASKED = "asked_for_battery"
 
 class MainActivity : Activity() {
 	private lateinit var content: ViewGroup
@@ -268,6 +269,17 @@ class MainActivity : Activity() {
 
 	private fun launchService() {
 		startForegroundService(Intent(this, BridgeService::class.java))
+		askToStayAlive()
+	}
+
+	@android.annotation.SuppressLint("BatteryLife")
+	private fun askToStayAlive() {
+		val power = getSystemService(android.os.PowerManager::class.java)
+		if (power.isIgnoringBatteryOptimizations(packageName) || prefs.getBoolean(KEY_BATTERY_ASKED, false)) return
+		prefs.edit().putBoolean(KEY_BATTERY_ASKED, true).apply()
+		runCatching {
+			startActivity(Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.parse("package:$packageName")))
+		}
 	}
 
 	private fun stopBridge() {

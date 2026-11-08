@@ -61,6 +61,7 @@ public static class Strings
 		["InCallOnPhone"] = ("In call · sound on the phone", "Разговор · звук на телефоне"),
 		["MoveToPhone"] = ("Move to phone", "Перевести на телефон"),
 		["MoveToPc"] = ("Move to PC", "Перевести на ПК"),
+		["ModeFailed"] = ("The phone did not confirm the switch, try again", "Телефон не подтвердил переключение, попробуйте ещё раз"),
 		["AudioUnavailable"] = ("Call sound unavailable: {0}", "Звук звонка недоступен: {0}"),
 		["AudioDeviceError"] = ("Unable to use the sound device: {0}", "Не удалось использовать аудиоустройство: {0}"),
 		["NoSuchContact"] = ("No matching contact. Enter a number or choose a contact from the list.", "Такого контакта нет. Введите номер или выберите контакт из списка."),

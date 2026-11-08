@@ -23,6 +23,8 @@ import org.json.JSONObject
 private const val CHANNEL_ID = "bridge"
 private const val NOTIFICATION_ID = 1
 private const val RECONNECT_DELAY_MS = 3000L
+private const val NETWORK_RETRY_MS = 600L
+private const val MAX_RETRY_MS = 15000L
 private const val CONTACTS_DEBOUNCE_MS = 3000L
 
 /** Keeps the connection to the PC alive and forwards call audio and control. */
@@ -39,6 +41,14 @@ class BridgeService : Service(), BridgeConnection.Listener {
 	private var lastNumber: String? = null
 	private var lastCall = "idle"
 	private var stopping = false
+	private var retryPending = false
+	private var failures = 0
+	private var microphoneForeground = false
+	private var wifiLock: android.net.wifi.WifiManager.WifiLock? = null
+	private val reconnectTask = Runnable {
+		retryPending = false
+		if (!stopping) connect()
+	}
 	private var networkWatch: android.net.ConnectivityManager.NetworkCallback? = null
 
 	private val sendContactsTask = Runnable { sendContacts() }
@@ -69,7 +79,7 @@ class BridgeService : Service(), BridgeConnection.Listener {
 		overlay = CallModeOverlay(this, ::toggleCallMode)
 		val channel = NotificationChannel(CHANNEL_ID, getString(R.string.notification_channel), NotificationManager.IMPORTANCE_LOW)
 		getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
-		networkWatch = NetworkReport.watch(this)
+		networkWatch = NetworkReport.watch(this) { main.post { onNetworkChanged() } }
 		registerReceiver(phoneReceiver, IntentFilter(TelephonyManager.ACTION_PHONE_STATE_CHANGED), RECEIVER_EXPORTED)
 		contentResolver.registerContentObserver(ContactsContract.Contacts.CONTENT_URI, true, contactsObserver)
 		CallRelay.onHoldChanged = { onHoldChanged(it) }
@@ -100,6 +110,9 @@ class BridgeService : Service(), BridgeConnection.Listener {
 		}
 		if (intent?.action == ACTION_STOP) {
 			stopping = true
+			PairingStore(this).autostart = false
+			main.removeCallbacks(reconnectTask)
+			releaseWifi()
 			disconnect()
 			BridgeState.running = false
 			BridgeState.update("")
@@ -108,17 +121,75 @@ class BridgeService : Service(), BridgeConnection.Listener {
 			stopSelf()
 			return START_NOT_STICKY
 		}
-		pairing = PairingStore(this).load()
+		val store = PairingStore(this)
+		pairing = store.load()
 		val current = pairing
 		if (current == null) {
 			stopSelf()
 			return START_NOT_STICKY
 		}
 		stopping = false
+		store.autostart = true
+		recoverCallState()
 		BridgeState.running = true
-		startForeground(NOTIFICATION_ID, buildNotification(), ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE)
+		enterForeground()
+		holdWifi()
+		main.removeCallbacks(reconnectTask)
+		retryPending = false
 		connect()
 		return START_REDELIVER_INTENT
+	}
+
+	private fun recoverCallState() {
+		if (lastCall != "idle") return
+		lastCall = when (getSystemService(TelephonyManager::class.java).callState) {
+			TelephonyManager.CALL_STATE_RINGING -> "ringing"
+			TelephonyManager.CALL_STATE_OFFHOOK -> if (CallRelay.holding) "held" else "active"
+			else -> "idle"
+		}
+	}
+
+	private fun enterForeground() {
+		val notification = buildNotification()
+		try {
+			startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE)
+			microphoneForeground = true
+		} catch (e: RuntimeException) {
+			android.util.Log.i("CallBridge", "microphone foreground refused (${e.message}), using the plain link type")
+			microphoneForeground = false
+			startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
+		}
+	}
+
+	private fun promoteToMicrophone() {
+		if (microphoneForeground || !BridgeState.running) return
+		try {
+			startForeground(NOTIFICATION_ID, buildNotification(), ServiceInfo.FOREGROUND_SERVICE_TYPE_MICROPHONE)
+			microphoneForeground = true
+		} catch (e: RuntimeException) {
+			android.util.Log.w("CallBridge", "cannot switch to the microphone type: ${e.message}")
+		}
+	}
+
+	@Suppress("DEPRECATION")
+	private fun holdWifi() {
+		if (wifiLock?.isHeld == true) return
+		val manager = applicationContext.getSystemService(android.net.wifi.WifiManager::class.java)
+		wifiLock = manager.createWifiLock(android.net.wifi.WifiManager.WIFI_MODE_FULL_HIGH_PERF, "callbridge:link").also {
+			it.setReferenceCounted(false)
+			it.acquire()
+		}
+	}
+
+	private fun releaseWifi() {
+		wifiLock?.let { if (it.isHeld) it.release() }
+		wifiLock = null
+	}
+
+	private fun onNetworkChanged() {
+		if (stopping || !BridgeState.running || !retryPending) return
+		main.removeCallbacks(reconnectTask)
+		main.postDelayed(reconnectTask, NETWORK_RETRY_MS)
 	}
 
 	private fun buildNotification(): Notification {
@@ -180,6 +251,7 @@ class BridgeService : Service(), BridgeConnection.Listener {
 
 	override fun onConnected() {
 		android.util.Log.i("CallBridge", "connected: ${NetworkReport.snapshot(this, null)}")
+		failures = 0
 		BridgeState.update(pairing?.name.orEmpty(), connected = true)
 		main.post {
 			sendState(lastCall, lastNumber)
@@ -201,6 +273,8 @@ class BridgeService : Service(), BridgeConnection.Listener {
 			if (stopping) return@post
 			if (reason == "wrong code") {
 				BridgeState.running = false
+				PairingStore(this).autostart = false
+				releaseWifi()
 				BridgeState.update(getString(R.string.status_outdated))
 				overlay.hide()
 				stopForeground(STOP_FOREGROUND_REMOVE)
@@ -209,7 +283,10 @@ class BridgeService : Service(), BridgeConnection.Listener {
 			}
 			BridgeState.update(getString(R.string.status_retry, if (reason == "PC not reachable") getString(R.string.reason_unreachable) else reason))
 			syncCall()
-			main.postDelayed({ if (!stopping) connect() }, RECONNECT_DELAY_MS)
+			failures++
+			retryPending = true
+			main.removeCallbacks(reconnectTask)
+			main.postDelayed(reconnectTask, minOf(RECONNECT_DELAY_MS * failures, MAX_RETRY_MS))
 		}
 	}
 
@@ -256,6 +333,7 @@ class BridgeService : Service(), BridgeConnection.Listener {
 	private fun startCapture() {
 		if (capture != null) return
 		val link = connection ?: return
+		promoteToMicrophone()
 		capture = DownlinkCapture(link::sendDownlink) { reason ->
 			link.sendControl(JSONObject().put("t", "audio").put("route", "unavailable").put("reason", reason))
 		}.also { it.start() }
@@ -279,6 +357,8 @@ class BridgeService : Service(), BridgeConnection.Listener {
 		networkWatch?.let { NetworkReport.unwatch(this, it) }
 		CallRelay.onHoldChanged = null
 		CallRelay.onHoldFailed = null
+		main.removeCallbacks(reconnectTask)
+		releaseWifi()
 		unregisterReceiver(phoneReceiver)
 		disconnect()
 		overlay.hide()

@@ -475,7 +475,38 @@ public partial class MainWindow : Window
 			tonePlayer.Play(SelectedId(SpeakerCombo), digit[0]);
 	}
 
-	void OnModeClick(object sender, RoutedEventArgs e) => _ = session?.SetCallModeAsync(callMode == CallMode.Phone ? CallMode.Pc : CallMode.Phone);
+	void OnModeClick(object sender, RoutedEventArgs e)
+	{
+		var target = callMode == CallMode.Phone ? CallMode.Pc : CallMode.Phone;
+		var requested = session;
+		if (requested == null)
+			return;
+		_ = requested.SetCallModeAsync(target).ContinueWith(t =>
+		{
+			if (t.IsFaulted)
+				Dispatcher.Invoke(ShowModeFailed);
+		});
+		var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3) };
+		timer.Tick += (_, _) =>
+		{
+			timer.Stop();
+			if (callMode != target && session == requested && lastState.Call != CallState.Idle)
+				ShowModeFailed();
+		};
+		timer.Start();
+	}
+
+	void ShowModeFailed()
+	{
+		CallSub.Text = Strings.Get("ModeFailed");
+		var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(3) };
+		timer.Tick += (_, _) =>
+		{
+			timer.Stop();
+			ShowState(lastState);
+		};
+		timer.Start();
+	}
 
 	void OnDial(object sender, RoutedEventArgs e)
 	{

@@ -11,6 +11,11 @@ private const val EVENT_HOLD_FAILED = "android.telecom.event.CALL_HOLD_FAILED"
 private const val DTMF_TONE_MS = 250L
 
 class BridgeInCallService : InCallService() {
+	override fun onCreate() {
+		super.onCreate()
+		StartReceiver.ensureRunning(this, "the in-call service started")
+	}
+
 	override fun onCallAdded(call: Call) {
 		CallRelay.add(call)
 	}

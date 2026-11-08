@@ -34,11 +34,12 @@ object NetworkReport {
 		return "active=${describe(manager.getNetworkCapabilities(active))}, bound=${bound ?: "none"}, networks=[$all]"
 	}
 
-	fun watch(context: Context): ConnectivityManager.NetworkCallback {
+	fun watch(context: Context, onChange: () -> Unit = {}): ConnectivityManager.NetworkCallback {
 		val manager = context.getSystemService(ConnectivityManager::class.java)
 		val callback = object : ConnectivityManager.NetworkCallback() {
 			override fun onAvailable(network: Network) {
 				Log.i(TAG, "network available: $network")
+				onChange()
 			}
 
 			override fun onCapabilitiesChanged(network: Network, capabilities: NetworkCapabilities) {
@@ -47,6 +48,7 @@ object NetworkReport {
 
 			override fun onLost(network: Network) {
 				Log.i(TAG, "network lost: $network")
+				onChange()
 			}
 		}
 		manager.registerNetworkCallback(NetworkRequest.Builder().build(), callback)

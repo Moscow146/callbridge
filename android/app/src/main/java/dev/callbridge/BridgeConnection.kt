@@ -11,6 +11,7 @@ import java.net.Socket
 import java.util.concurrent.Executors
 
 private const val CONNECT_TIMEOUT_MS = 1500
+private const val IDLE_TIMEOUT_MS = 9000
 
 /** Connects to the PC, performs the handshake and dispatches incoming frames. */
 class BridgeConnection(
@@ -91,6 +92,8 @@ class BridgeConnection(
 		try {
 			val s = reach() ?: throw IOException("PC not reachable")
 			socket = s
+			s.soTimeout = IDLE_TIMEOUT_MS
+			s.keepAlive = true
 			val stream = FrameStream(s.getInputStream(), s.getOutputStream())
 			val hello = JSONObject().put("version", PROTOCOL_VERSION).put("device", deviceName).put("token", pairing.code)
 			stream.write(FrameType.HELLO, hello.toString().toByteArray())
@@ -111,6 +114,8 @@ class BridgeConnection(
 					FrameType.PING -> stream.write(FrameType.PONG, frame.payload)
 				}
 			}
+		} catch (e: java.net.SocketTimeoutException) {
+			reason = "PC stopped answering"
 		} catch (e: IOException) {
 			reason = e.message ?: "connection error"
 		} catch (e: JSONException) {
