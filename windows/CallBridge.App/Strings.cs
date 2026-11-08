@@ -24,6 +24,7 @@ public static class Strings
 		["Microphone"] = ("Microphone", "Микрофон"),
 		["MicMeter"] = ("Microphone level", "Уровень микрофона"),
 		["Gain"] = ("Gain", "Усиление"),
+		["EchoCancelHint"] = ("Removes the phone's voice from your microphone when you listen on speakers", "Убирает голос собеседника из микрофона, когда вы слушаете через колонки"),
 		["EchoCancel"] = ("Echo cancellation (for speakers)", "Эхоподавление (для колонок)"),
 		["Output"] = ("Sound output", "Вывод звука"),
 		["Startup"] = ("Startup", "Запуск"),
