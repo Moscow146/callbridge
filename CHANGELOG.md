@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- PC app: fixed a crash when clicking a switch. The knob animation tried to animate a frozen transform from the control template ("Cannot animate the property X ... because this object is sealed or frozen"); it now animates a copy.
+
 ## 0.5.2
 
 - The call card and the dial suggestions show the contact's photo instead of initials when the phone has one; contacts without a photo keep the initials. The phone sends a 96x96 JPEG thumbnail on request (new `photo` control message, see docs/PROTOCOL.md), the PC asks only for the contacts it shows and caches the photos in memory and in `%APPDATA%\CallBridge\photos` (at most 2000 files, 32 MB).
