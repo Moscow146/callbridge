@@ -22,6 +22,8 @@ public sealed class AppSettings
 
 	public double MicGain { get; set; } = 1;
 
+	public bool EchoCancellation { get; set; }
+
 	public static AppSettings Load()
 	{
 		try
