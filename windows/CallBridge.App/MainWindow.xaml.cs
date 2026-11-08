@@ -50,6 +50,8 @@ public partial class MainWindow : Window
 		VolumeText.Text = $"{settings.Volume * 100:0}%";
 		MicGainSlider.Value = settings.MicGain;
 		MicGainText.Text = $"{settings.MicGain * 100:0}%";
+		AutostartSwitch.IsChecked = !demo && Autostart.Enabled;
+		AutostartSwitch.IsEnabled = !demo && Autostart.Supported;
 		loading = false;
 
 		if (demo)
@@ -318,6 +320,19 @@ public partial class MainWindow : Window
 	{
 		if (session != null)
 			session.Deafened = DeafenButton.IsChecked == true;
+	}
+
+	void OnAutostartClick(object sender, RoutedEventArgs e)
+	{
+		try
+		{
+			Autostart.Set(AutostartSwitch.IsChecked == true);
+		}
+		catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or System.Security.SecurityException)
+		{
+			AutostartSwitch.IsChecked = Autostart.Enabled;
+			MessageBox.Show(Strings.Format("AutostartError", ex.Message), "CallBridge", MessageBoxButton.OK, MessageBoxImage.Error);
+		}
 	}
 
 	void OnAnswer(object sender, RoutedEventArgs e) => _ = session?.SendCommandAsync("answer");
